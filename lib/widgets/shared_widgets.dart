@@ -38,9 +38,9 @@ class LeftPanel extends StatelessWidget {
                         height: 75,
                       ),
                       const SizedBox(width: 16),
-                      Text(
+                      const Text(
                         'GestAsocia',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 48,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -49,9 +49,9 @@ class LeftPanel extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Text(
+                  const Text(
                     'Sistema de Gestión de Asociados',
-                    style: const TextStyle(fontSize: 18, color: Colors.white70),
+                    style: TextStyle(fontSize: 18, color: Colors.white70),
                   ),
                   const SizedBox(height: 32),
                   Container(
@@ -101,7 +101,7 @@ class FeatureItem {
   const FeatureItem({required this.icon, required this.text});
 }
 
-// Widget para decoración de input reutilizable
+// Widget para decoración de input reutilizable (usando AppTheme)
 class AppTextField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
@@ -128,27 +128,40 @@ class AppTextField extends StatelessWidget {
       controller: controller,
       keyboardType: keyboardType,
       obscureText: obscureText,
+      style: TextStyle(
+        color: AppTheme.getTextPrimary(context),
+      ),
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,
-        prefixIcon: Icon(icon, size: 20),
+        prefixIcon: Icon(
+          icon, 
+          size: 20,
+          color: AppTheme.getTextSecondary(context),
+        ),
         suffixIcon: suffixIcon,
         filled: true,
-        fillColor: const Color(0xFFF7FAFC),
+        fillColor: AppTheme.getInputBackground(context),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+          borderSide: BorderSide(color: AppTheme.getBorderLight(context)),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: Color(0xFF4299E1), width: 2),
+          borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
+          borderSide: const BorderSide(color: AppTheme.primaryColor, width: 2),
+        ),
+        labelStyle: TextStyle(
+          color: AppTheme.getTextSecondary(context),
+        ),
+        hintStyle: TextStyle(
+          color: AppTheme.getTextSecondary(context).withOpacity(0.7),
         ),
       ),
     );
   }
 }
 
-// Widget para headers de sección
+// Widget para headers de sección (usando AppTheme)
 class SectionHeader extends StatelessWidget {
   final IconData icon;
   final String title;
@@ -163,14 +176,18 @@ class SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, color: Colors.grey, size: 20),
+        Icon(
+          icon, 
+          color: AppTheme.getTextSecondary(context), 
+          size: 20,
+        ),
         const SizedBox(width: 8),
         Text(
           title,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: AppTheme.fontSizeL,
             fontWeight: FontWeight.w600,
-            color: Colors.grey,
+            color: AppTheme.getTextSecondary(context),
           ),
         ),
       ],

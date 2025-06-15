@@ -15,15 +15,10 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       title: 'GestAsocia',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppTheme.primaryColor,
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-        fontFamily: 'Roboto',
-      ),
-      initialRoute: AppRoutes.login,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system, // DETECCIÓN AUTOMÁTICA DEL SISTEMA
+      initialRoute: AppRoutes.splash,
       getPages: AppRoutes.routes,
     );
   }

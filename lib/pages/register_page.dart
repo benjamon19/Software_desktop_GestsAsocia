@@ -44,7 +44,7 @@ class _RegisterPageState extends State<RegisterPage> {
         color: AppTheme.backgroundColor,
         child: Row(
           children: [
-            // Panel izquierdo usando widget reutilizable
+            // Panel izquierdo (siempre oscuro)
             LeftPanel(
               title: 'GestAsocia',
               subtitle: 'Sistema de Gestión de Asociados',
@@ -54,11 +54,11 @@ class _RegisterPageState extends State<RegisterPage> {
                 FeatureItem(icon: Icons.verified_user, text: 'Verificación automática'),
               ],
             ),
-            // Panel derecho
+            // Panel derecho (adaptativo)
             Expanded(
               flex: 4,
               child: Container(
-                color: AppTheme.surfaceColor,
+                color: AppTheme.getSurfaceColor(context),
                 child: Center(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(40),
@@ -69,20 +69,12 @@ class _RegisterPageState extends State<RegisterPage> {
                         children: [
                           const SizedBox(height: 32),
                           // Header
-                          const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Crear Cuenta', style: AppTheme.headingMedium),
-                              SizedBox(height: 8),
-                              Text('Completa los datos para registrarte'),
-                            ],
-                          ),
+                          Text('Crear Cuenta', style: AppTheme.getHeadingMedium(context)),
+                          const SizedBox(height: 8),
+                          Text('Completa los datos para registrarte', style: AppTheme.getBodyMedium(context)),
                           const SizedBox(height: 32),
                           // Información Personal
-                          const SectionHeader(
-                            icon: Icons.person,
-                            title: 'Información Personal',
-                          ),
+                          const SectionHeader(icon: Icons.person, title: 'Información Personal'),
                           const SizedBox(height: 16),
                           Row(
                             children: [
@@ -116,10 +108,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           const SizedBox(height: 32),
                           // Comunicación
-                          const SectionHeader(
-                            icon: Icons.contact_mail,
-                            title: 'Comunicación',
-                          ),
+                          const SectionHeader(icon: Icons.contact_mail, title: 'Comunicación'),
                           const SizedBox(height: 16),
                           AppTextField(
                             controller: emailController,
@@ -138,10 +127,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           const SizedBox(height: 32),
                           // Seguridad
-                          const SectionHeader(
-                            icon: Icons.security,
-                            title: 'Seguridad',
-                          ),
+                          const SectionHeader(icon: Icons.security, title: 'Seguridad'),
                           const SizedBox(height: 16),
                           AppTextField(
                             controller: passwordController,
@@ -151,7 +137,11 @@ class _RegisterPageState extends State<RegisterPage> {
                             obscureText: !isPasswordVisible,
                             suffixIcon: IconButton(
                               onPressed: () => setState(() => isPasswordVisible = !isPasswordVisible),
-                              icon: Icon(isPasswordVisible ? Icons.visibility_off : Icons.visibility, size: 20),
+                              icon: Icon(
+                                isPasswordVisible ? Icons.visibility_off : Icons.visibility, 
+                                size: 20,
+                                color: AppTheme.getTextSecondary(context),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 20),
@@ -163,7 +153,11 @@ class _RegisterPageState extends State<RegisterPage> {
                             obscureText: !isConfirmPasswordVisible,
                             suffixIcon: IconButton(
                               onPressed: () => setState(() => isConfirmPasswordVisible = !isConfirmPasswordVisible),
-                              icon: Icon(isConfirmPasswordVisible ? Icons.visibility_off : Icons.visibility, size: 20),
+                              icon: Icon(
+                                isConfirmPasswordVisible ? Icons.visibility_off : Icons.visibility, 
+                                size: 20,
+                                color: AppTheme.getTextSecondary(context),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -175,10 +169,10 @@ class _RegisterPageState extends State<RegisterPage> {
                                 value: acceptTerms,
                                 onChanged: (value) => setState(() => acceptTerms = value ?? false),
                               ),
-                              const Expanded(
+                              Expanded(
                                 child: Text(
                                   'Acepto los términos y condiciones de uso',
-                                  style: TextStyle(fontSize: 14),
+                                  style: AppTheme.getBodyMedium(context),
                                 ),
                               ),
                             ],
@@ -206,11 +200,14 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           const SizedBox(height: 32),
                           // Divider
-                          const Row(
+                          Row(
                             children: [
-                              Expanded(child: Divider()),
-                              Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text('o')),
-                              Expanded(child: Divider()),
+                              Expanded(child: Divider(color: AppTheme.getBorderLight(context))),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16), 
+                                child: Text('o', style: AppTheme.getBodyMedium(context)),
+                              ),
+                              Expanded(child: Divider(color: AppTheme.getBorderLight(context))),
                             ],
                           ),
                           const SizedBox(height: 32),
@@ -254,7 +251,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     if (passwordController.text != confirmPasswordController.text) {
       Get.snackbar(
-        'Error',
+        'Error', 
         'Las contraseñas no coinciden',
         backgroundColor: Colors.red.shade100,
         colorText: Colors.red.shade800,

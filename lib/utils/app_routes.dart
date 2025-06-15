@@ -1,12 +1,18 @@
 import 'package:get/get.dart';
+import '../pages/splash_screen.dart';
 import '../pages/login_page.dart';
 import '../pages/register_page.dart';
 
 class AppRoutes {
+  static const String splash = '/';
   static const String login = '/login';
   static const String register = '/register';
 
   static List<GetPage> routes = [
+    GetPage(
+      name: splash,
+      page: () => const SplashScreen(),
+    ),
     GetPage(
       name: login,
       page: () => const LoginPage(),

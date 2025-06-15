@@ -34,7 +34,7 @@ class _LoginPageState extends State<LoginPage> {
         color: AppTheme.backgroundColor,
         child: Row(
           children: [
-            // Panel izquierdo usando widget reutilizable
+            // Panel izquierdo (siempre oscuro)
             LeftPanel(
               title: 'GestAsocia',
               subtitle: 'Sistema de Gestión de Asociados',
@@ -44,11 +44,11 @@ class _LoginPageState extends State<LoginPage> {
                 FeatureItem(icon: Icons.calendar_today, text: 'Sistema de reservas médicas'),
               ],
             ),
-            // Panel derecho
+            // Panel derecho (adaptativo)
             Expanded(
               flex: 4,
               child: Container(
-                color: AppTheme.surfaceColor,
+                color: AppTheme.getSurfaceColor(context),
                 child: Center(
                   child: SingleChildScrollView(
                     padding: const EdgeInsets.all(40),
@@ -59,14 +59,9 @@ class _LoginPageState extends State<LoginPage> {
                         children: [
                           const SizedBox(height: 32),
                           // Header
-                          const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text('Bienvenido', style: AppTheme.headingMedium),
-                              SizedBox(height: 8),
-                              Text('Ingresa a tu cuenta para continuar'),
-                            ],
-                          ),
+                          Text('Bienvenido', style: AppTheme.getHeadingMedium(context)),
+                          const SizedBox(height: 8),
+                          Text('Ingresa a tu cuenta para continuar', style: AppTheme.getBodyMedium(context)),
                           const SizedBox(height: 32),
                           // Email/RUT field
                           AppTextField(
@@ -86,7 +81,11 @@ class _LoginPageState extends State<LoginPage> {
                             obscureText: !isPasswordVisible,
                             suffixIcon: IconButton(
                               onPressed: () => setState(() => isPasswordVisible = !isPasswordVisible),
-                              icon: Icon(isPasswordVisible ? Icons.visibility_off : Icons.visibility, size: 20),
+                              icon: Icon(
+                                isPasswordVisible ? Icons.visibility_off : Icons.visibility, 
+                                size: 20,
+                                color: AppTheme.getTextSecondary(context),
+                              ),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -97,7 +96,7 @@ class _LoginPageState extends State<LoginPage> {
                                 value: rememberMe,
                                 onChanged: (value) => setState(() => rememberMe = value ?? false),
                               ),
-                              const Text('Recordarme'),
+                              Text('Recordarme', style: AppTheme.getBodyMedium(context)),
                             ],
                           ),
                           const SizedBox(height: 32),
@@ -123,11 +122,14 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: 32),
                           // Divider
-                          const Row(
+                          Row(
                             children: [
-                              Expanded(child: Divider()),
-                              Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text('o')),
-                              Expanded(child: Divider()),
+                              Expanded(child: Divider(color: AppTheme.getBorderLight(context))),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 16), 
+                                child: Text('o', style: AppTheme.getBodyMedium(context)),
+                              ),
+                              Expanded(child: Divider(color: AppTheme.getBorderLight(context))),
                             ],
                           ),
                           const SizedBox(height: 32),
