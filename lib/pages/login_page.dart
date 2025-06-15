@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import '../utils/app_theme.dart';
 import '../utils/app_routes.dart';
 import '../widgets/interactive_link.dart';
-import 'dart:math';
+import '../widgets/shared_widgets.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -34,21 +34,15 @@ class _LoginPageState extends State<LoginPage> {
         color: AppTheme.backgroundColor,
         child: Row(
           children: [
-            // Panel izquierdo
-            Expanded(
-              flex: 5,
-              child: Container(
-                decoration: const BoxDecoration(color: AppTheme.secondaryColor),
-                child: Stack(
-                  children: [
-                    Positioned.fill(child: CustomPaint(painter: BackgroundPainter())),
-                    const Padding(
-                      padding: EdgeInsets.all(60),
-                      child: _LeftPanelContent(),
-                    ),
-                  ],
-                ),
-              ),
+            // Panel izquierdo usando widget reutilizable
+            LeftPanel(
+              title: 'GestAsocia',
+              subtitle: 'Sistema de Gestión de Asociados',
+              features: const [
+                FeatureItem(icon: Icons.people_outline, text: 'Gestión completa de asociados'),
+                FeatureItem(icon: Icons.family_restroom, text: 'Control de cargas familiares'),
+                FeatureItem(icon: Icons.calendar_today, text: 'Sistema de reservas médicas'),
+              ],
             ),
             // Panel derecho
             Expanded(
@@ -63,7 +57,6 @@ class _LoginPageState extends State<LoginPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-
                           const SizedBox(height: 32),
                           // Header
                           const Column(
@@ -76,28 +69,24 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: 32),
                           // Email/RUT field
-                          TextFormField(
+                          AppTextField(
                             controller: emailController,
+                            label: 'RUT o Correo electrónico',
+                            hint: 'Ej: 12345678-9 o ejemplo@correo.com',
+                            icon: Icons.person_outline,
                             keyboardType: TextInputType.text,
-                            decoration: _inputDecoration(
-                              'RUT o Correo electrónico',
-                              'Ej: 12345678-9 o ejemplo@correo.com',
-                              Icons.person_outline,
-                            ),
                           ),
                           const SizedBox(height: 24),
                           // Password field
-                          TextFormField(
+                          AppTextField(
                             controller: passwordController,
+                            label: 'Contraseña',
+                            hint: '••••••••',
+                            icon: Icons.lock_outline,
                             obscureText: !isPasswordVisible,
-                            decoration: _inputDecoration(
-                              'Contraseña',
-                              '••••••••',
-                              Icons.lock_outline,
-                              suffixIcon: IconButton(
-                                onPressed: () => setState(() => isPasswordVisible = !isPasswordVisible),
-                                icon: Icon(isPasswordVisible ? Icons.visibility_off : Icons.visibility, size: 20),
-                              ),
+                            suffixIcon: IconButton(
+                              onPressed: () => setState(() => isPasswordVisible = !isPasswordVisible),
+                              icon: Icon(isPasswordVisible ? Icons.visibility_off : Icons.visibility, size: 20),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -162,25 +151,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  InputDecoration _inputDecoration(String label, String hint, IconData icon, {Widget? suffixIcon}) {
-    return InputDecoration(
-      labelText: label,
-      hintText: hint,
-      prefixIcon: Icon(icon, size: 20),
-      suffixIcon: suffixIcon,
-      filled: true,
-      fillColor: const Color(0xFFF7FAFC),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFF4299E1), width: 2),
-      ),
-    );
-  }
-
   Future<void> _handleLogin() async {
     setState(() => isLoading = true);
     await Future.delayed(const Duration(seconds: 1));
@@ -192,96 +162,4 @@ class _LoginPageState extends State<LoginPage> {
     );
     setState(() => isLoading = false);
   }
-}
-
-class _LeftPanelContent extends StatelessWidget {
-  const _LeftPanelContent();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Image.asset(
-              'assets/images/gestasocia_icon.png',
-              width: 75,
-              height: 75,
-            ),
-            const SizedBox(width: 16),
-            const Text('GestAsocia', style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: Colors.white)),
-          ],
-        ),
-        const SizedBox(height: 16),
-        const Text('Sistema de Gestión de Asociados', style: TextStyle(fontSize: 18, color: Colors.white70)),
-        const SizedBox(height: 32),
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
-          ),
-          child: const Column(
-            children: [
-              _FeatureItem(icon: Icons.people_outline, text: 'Gestión completa de asociados'),
-              SizedBox(height: 16),
-              _FeatureItem(icon: Icons.family_restroom, text: 'Control de cargas familiares'),
-              SizedBox(height: 16),
-              _FeatureItem(icon: Icons.calendar_today, text: 'Sistema de reservas médicas'),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _FeatureItem extends StatelessWidget {
-  final IconData icon;
-  final String text;
-
-  const _FeatureItem({required this.icon, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: AppTheme.primaryColor, size: 20),
-        const SizedBox(width: 12),
-        Expanded(child: Text(text, style: const TextStyle(color: Colors.white70))),
-      ],
-    );
-  }
-}
-
-class BackgroundPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = AppTheme.primaryColor.withOpacity(0.05)..style = PaintingStyle.fill;
-    final path = Path();
-    
-    for (int i = 0; i < 3; i++) {
-      final startY = size.height * (0.2 + i * 0.3);
-      path.moveTo(0, startY);
-      for (double x = 0; x <= size.width; x += 10) {
-        final y = startY + 100 * sin((x / size.width * 2 * pi) + (i * pi / 2));
-        path.lineTo(x, y);
-      }
-      path.lineTo(size.width, size.height);
-      path.lineTo(0, size.height);
-      path.close();
-      canvas.drawPath(path, paint);
-      path.reset();
-    }
-
-    final circlePaint = Paint()..color = AppTheme.primaryColor.withOpacity(0.03)..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(size.width * 0.1, size.height * 0.2), 150, circlePaint);
-    canvas.drawCircle(Offset(size.width * 0.9, size.height * 0.8), 200, circlePaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

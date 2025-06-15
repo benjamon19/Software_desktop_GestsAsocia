@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../utils/app_theme.dart';
 import '../widgets/interactive_link.dart';
-import 'dart:math';
+import '../widgets/shared_widgets.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -44,21 +44,15 @@ class _RegisterPageState extends State<RegisterPage> {
         color: AppTheme.backgroundColor,
         child: Row(
           children: [
-            // Panel izquierdo
-            Expanded(
-              flex: 5,
-              child: Container(
-                decoration: const BoxDecoration(color: AppTheme.secondaryColor),
-                child: Stack(
-                  children: [
-                    Positioned.fill(child: CustomPaint(painter: BackgroundPainter())),
-                    const Padding(
-                      padding: EdgeInsets.all(60),
-                      child: _LeftPanelContent(),
-                    ),
-                  ],
-                ),
-              ),
+            // Panel izquierdo usando widget reutilizable
+            LeftPanel(
+              title: 'GestAsocia',
+              subtitle: 'Sistema de Gestión de Asociados',
+              features: const [
+                FeatureItem(icon: Icons.person_add_outlined, text: 'Registro rápido y seguro'),
+                FeatureItem(icon: Icons.security, text: 'Protección de datos garantizada'),
+                FeatureItem(icon: Icons.verified_user, text: 'Verificación automática'),
+              ],
             ),
             // Panel derecho
             Expanded(
@@ -84,143 +78,92 @@ class _RegisterPageState extends State<RegisterPage> {
                             ],
                           ),
                           const SizedBox(height: 32),
-                          // Información Personal Header
-                          const Row(
-                            children: [
-                              Icon(Icons.person, color: Colors.grey, size: 20),
-                              SizedBox(width: 8),
-                              Text(
-                                'Información Personal',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
+                          // Información Personal
+                          const SectionHeader(
+                            icon: Icons.person,
+                            title: 'Información Personal',
                           ),
                           const SizedBox(height: 16),
-                          // Nombre y Apellido en fila
                           Row(
                             children: [
                               Expanded(
-                                child: TextFormField(
+                                child: AppTextField(
                                   controller: nombreController,
+                                  label: 'Nombre',
+                                  hint: 'Tu nombre',
+                                  icon: Icons.person_outline,
                                   keyboardType: TextInputType.name,
-                                  decoration: _inputDecoration(
-                                    'Nombre',
-                                    'Tu nombre',
-                                    Icons.person_outline,
-                                  ),
                                 ),
                               ),
                               const SizedBox(width: 16),
                               Expanded(
-                                child: TextFormField(
+                                child: AppTextField(
                                   controller: apellidoController,
+                                  label: 'Apellido',
+                                  hint: 'Tu apellido',
+                                  icon: Icons.person_outline,
                                   keyboardType: TextInputType.name,
-                                  decoration: _inputDecoration(
-                                    'Apellido',
-                                    'Tu apellido',
-                                    Icons.person_outline,
-                                  ),
                                 ),
                               ),
                             ],
                           ),
                           const SizedBox(height: 20),
-                          // RUT field
-                          TextFormField(
+                          AppTextField(
                             controller: rutController,
-                            keyboardType: TextInputType.text,
-                            decoration: _inputDecoration(
-                              'RUT',
-                              '12345678-9',
-                              Icons.badge_outlined,
-                            ),
+                            label: 'RUT',
+                            hint: '12345678-9',
+                            icon: Icons.badge_outlined,
                           ),
                           const SizedBox(height: 32),
-                          // Comunicación Header
-                          const Row(
-                            children: [
-                              Icon(Icons.contact_mail, color: Colors.grey, size: 20),
-                              SizedBox(width: 8),
-                              Text(
-                                'Comunicación',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
+                          // Comunicación
+                          const SectionHeader(
+                            icon: Icons.contact_mail,
+                            title: 'Comunicación',
                           ),
                           const SizedBox(height: 16),
-                          // Email field
-                          TextFormField(
+                          AppTextField(
                             controller: emailController,
+                            label: 'Correo electrónico',
+                            hint: 'tu@correo.com',
+                            icon: Icons.email_outlined,
                             keyboardType: TextInputType.emailAddress,
-                            decoration: _inputDecoration(
-                              'Correo electrónico',
-                              'tu@correo.com',
-                              Icons.email_outlined,
-                            ),
                           ),
                           const SizedBox(height: 20),
-                          // Teléfono field
-                          TextFormField(
+                          AppTextField(
                             controller: telefonoController,
+                            label: 'Teléfono',
+                            hint: '+56 9 1234 5678',
+                            icon: Icons.phone_outlined,
                             keyboardType: TextInputType.phone,
-                            decoration: _inputDecoration(
-                              'Teléfono',
-                              '+56 9 1234 5678',
-                              Icons.phone_outlined,
-                            ),
                           ),
                           const SizedBox(height: 32),
-                          // Seguridad Header
-                          const Row(
-                            children: [
-                              Icon(Icons.security, color: Colors.grey, size: 20),
-                              SizedBox(width: 8),
-                              Text(
-                                'Seguridad',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
+                          // Seguridad
+                          const SectionHeader(
+                            icon: Icons.security,
+                            title: 'Seguridad',
                           ),
                           const SizedBox(height: 16),
-                          // Password field
-                          TextFormField(
+                          AppTextField(
                             controller: passwordController,
+                            label: 'Contraseña',
+                            hint: '••••••••',
+                            icon: Icons.lock_outline,
                             obscureText: !isPasswordVisible,
-                            decoration: _inputDecoration(
-                              'Contraseña',
-                              '••••••••',
-                              Icons.lock_outline,
-                              suffixIcon: IconButton(
-                                onPressed: () => setState(() => isPasswordVisible = !isPasswordVisible),
-                                icon: Icon(isPasswordVisible ? Icons.visibility_off : Icons.visibility, size: 20),
-                              ),
+                            suffixIcon: IconButton(
+                              onPressed: () => setState(() => isPasswordVisible = !isPasswordVisible),
+                              icon: Icon(isPasswordVisible ? Icons.visibility_off : Icons.visibility, size: 20),
                             ),
                           ),
                           const SizedBox(height: 20),
-                          // Confirm Password field
-                          TextFormField(
+                          AppTextField(
                             controller: confirmPasswordController,
+                            label: 'Confirmar Contraseña',
+                            hint: '••••••••',
+                            icon: Icons.lock_outline,
                             obscureText: !isConfirmPasswordVisible,
-                            decoration: _inputDecoration(
-                              'Confirmar Contraseña',
-                              '••••••••',
-                              Icons.lock_outline,
-                              suffixIcon: IconButton(
-                                onPressed: () => setState(() => isConfirmPasswordVisible = !isConfirmPasswordVisible),
-                                icon: Icon(isConfirmPasswordVisible ? Icons.visibility_off : Icons.visibility, size: 20),
-                              ),
+                            suffixIcon: IconButton(
+                              onPressed: () => setState(() => isConfirmPasswordVisible = !isConfirmPasswordVisible),
+                              icon: Icon(isConfirmPasswordVisible ? Icons.visibility_off : Icons.visibility, size: 20),
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -291,25 +234,6 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  InputDecoration _inputDecoration(String label, String hint, IconData icon, {Widget? suffixIcon}) {
-    return InputDecoration(
-      labelText: label,
-      hintText: hint,
-      prefixIcon: Icon(icon, size: 20),
-      suffixIcon: suffixIcon,
-      filled: true,
-      fillColor: const Color(0xFFF7FAFC),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Color(0xFF4299E1), width: 2),
-      ),
-    );
-  }
-
   Future<void> _handleRegister() async {
     // Validaciones básicas
     if (nombreController.text.isEmpty ||
@@ -348,102 +272,9 @@ class _RegisterPageState extends State<RegisterPage> {
       colorText: Colors.green.shade800,
     );
     
-    // Simular navegación de vuelta al login después del registro exitoso
     await Future.delayed(const Duration(seconds: 1));
     Get.back();
     
     setState(() => isLoading = false);
   }
-}
-
-class _LeftPanelContent extends StatelessWidget {
-  const _LeftPanelContent();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Image.asset(
-              'assets/images/gestasocia_icon.png',
-              width: 75,
-              height: 75,
-            ),
-            const SizedBox(width: 16),
-            const Text('GestAsocia', style: TextStyle(fontSize: 48, fontWeight: FontWeight.bold, color: Colors.white)),
-          ],
-        ),
-        const SizedBox(height: 16),
-        const Text('Sistema de Gestión de Asociados', style: TextStyle(fontSize: 18, color: Colors.white70)),
-        const SizedBox(height: 32),
-        Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: Colors.white.withOpacity(0.1)),
-          ),
-          child: const Column(
-            children: [
-              _FeatureItem(icon: Icons.person_add_outlined, text: 'Registro rápido y seguro'),
-              SizedBox(height: 16),
-              _FeatureItem(icon: Icons.security, text: 'Protección de datos garantizada'),
-              SizedBox(height: 16),
-              _FeatureItem(icon: Icons.verified_user, text: 'Verificación automática'),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _FeatureItem extends StatelessWidget {
-  final IconData icon;
-  final String text;
-
-  const _FeatureItem({required this.icon, required this.text});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: AppTheme.primaryColor, size: 20),
-        const SizedBox(width: 12),
-        Expanded(child: Text(text, style: const TextStyle(color: Colors.white70))),
-      ],
-    );
-  }
-}
-
-class BackgroundPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = AppTheme.primaryColor.withOpacity(0.05)..style = PaintingStyle.fill;
-    final path = Path();
-    
-    for (int i = 0; i < 3; i++) {
-      final startY = size.height * (0.2 + i * 0.3);
-      path.moveTo(0, startY);
-      for (double x = 0; x <= size.width; x += 10) {
-        final y = startY + 100 * sin((x / size.width * 2 * pi) + (i * pi / 2));
-        path.lineTo(x, y);
-      }
-      path.lineTo(size.width, size.height);
-      path.lineTo(0, size.height);
-      path.close();
-      canvas.drawPath(path, paint);
-      path.reset();
-    }
-
-    final circlePaint = Paint()..color = AppTheme.primaryColor.withOpacity(0.03)..style = PaintingStyle.fill;
-    canvas.drawCircle(Offset(size.width * 0.1, size.height * 0.2), 150, circlePaint);
-    canvas.drawCircle(Offset(size.width * 0.9, size.height * 0.8), 200, circlePaint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
