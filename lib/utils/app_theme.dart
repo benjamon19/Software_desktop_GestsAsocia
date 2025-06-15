@@ -25,11 +25,11 @@ class AppTheme {
   static const Color darkBackgroundColor = Color(0xFF1A1A1A); // Gris oscuro pero no tanto
   static const Color darkSurfaceColor = Color(0xFF2D2D2D);    // Gris medio para el panel
   
-  // Colores de texto modo oscuro
-  static const Color darkTextPrimary = Color(0xFFFFFFFF);
-  static const Color darkTextSecondary = Color(0xFFA0AEC0);
-  static const Color darkTextTertiary = Color(0xFF718096);
-  static const Color darkTextLight = Color(0xFF4A5568);
+  // Colores de texto modo oscuro (más claros y legibles)
+  static const Color darkTextPrimary = Color(0xFFFFFFFF);    // Blanco puro para títulos
+  static const Color darkTextSecondary = Color(0xFFE0E0E0);  // Gris muy claro (más legible)
+  static const Color darkTextTertiary = Color(0xFFBDBDBD);   // Gris claro
+  static const Color darkTextLight = Color(0xFF9E9E9E);      // Gris medio
   
   // Colores de borde e input modo oscuro (más equilibrados)
   static const Color darkBorderLight = Color(0xFF404040);     // Gris medio más visible
@@ -46,9 +46,9 @@ class AppTheme {
   static const Color labelMedium = Color(0xFF4A5568);
   static const Color caption = Color(0xFF718096);
   
-  // Etiquetas y captions modo oscuro
-  static const Color darkLabelMedium = Color(0xFFA0AEC0);
-  static const Color darkCaption = Color(0xFF718096);
+  // Etiquetas y captions modo oscuro (más claros)
+  static const Color darkLabelMedium = Color(0xFFE0E0E0);    // Más claro para mejor legibilidad
+  static const Color darkCaption = Color(0xFFBDBDBD);       // Gris claro para captions
   
   // Espaciados
   static const double spaceXS = 4.0;

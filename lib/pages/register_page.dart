@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../utils/app_theme.dart';
 import '../widgets/interactive_link.dart';
 import '../widgets/shared_widgets.dart';
+import '../widgets/theme_toggle_button.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -40,193 +41,199 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        color: AppTheme.backgroundColor,
-        child: Row(
-          children: [
-            // Panel izquierdo (siempre oscuro)
-            LeftPanel(
-              title: 'GestAsocia',
-              subtitle: 'Sistema de Gestión de Asociados',
-              features: const [
-                FeatureItem(icon: Icons.person_add_outlined, text: 'Registro rápido y seguro'),
-                FeatureItem(icon: Icons.security, text: 'Protección de datos garantizada'),
-                FeatureItem(icon: Icons.verified_user, text: 'Verificación automática'),
-              ],
-            ),
-            // Panel derecho (adaptativo)
-            Expanded(
-              flex: 4,
-              child: Container(
-                color: AppTheme.getSurfaceColor(context),
-                child: Center(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(40),
-                    child: Container(
-                      constraints: const BoxConstraints(maxWidth: 400),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          const SizedBox(height: 32),
-                          // Header
-                          Text('Crear Cuenta', style: AppTheme.getHeadingMedium(context)),
-                          const SizedBox(height: 8),
-                          Text('Completa los datos para registrarte', style: AppTheme.getBodyMedium(context)),
-                          const SizedBox(height: 32),
-                          // Información Personal
-                          const SectionHeader(icon: Icons.person, title: 'Información Personal'),
-                          const SizedBox(height: 16),
-                          Row(
+      body: Stack(
+        children: [
+          Container(
+            color: AppTheme.backgroundColor,
+            child: Row(
+              children: [
+                // Panel izquierdo (siempre oscuro)
+                LeftPanel(
+                  title: 'GestAsocia',
+                  subtitle: 'Sistema de Gestión de Asociados',
+                  features: const [
+                    FeatureItem(icon: Icons.person_add_outlined, text: 'Registro rápido y seguro'),
+                    FeatureItem(icon: Icons.security, text: 'Protección de datos garantizada'),
+                    FeatureItem(icon: Icons.verified_user, text: 'Verificación automática'),
+                  ],
+                ),
+                // Panel derecho (adaptativo)
+                Expanded(
+                  flex: 4,
+                  child: Container(
+                    color: AppTheme.getSurfaceColor(context),
+                    child: Center(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(40),
+                        child: Container(
+                          constraints: const BoxConstraints(maxWidth: 400),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              Expanded(
-                                child: AppTextField(
-                                  controller: nombreController,
-                                  label: 'Nombre',
-                                  hint: 'Tu nombre',
-                                  icon: Icons.person_outline,
-                                  keyboardType: TextInputType.name,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Expanded(
-                                child: AppTextField(
-                                  controller: apellidoController,
-                                  label: 'Apellido',
-                                  hint: 'Tu apellido',
-                                  icon: Icons.person_outline,
-                                  keyboardType: TextInputType.name,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-                          AppTextField(
-                            controller: rutController,
-                            label: 'RUT',
-                            hint: '12345678-9',
-                            icon: Icons.badge_outlined,
-                          ),
-                          const SizedBox(height: 32),
-                          // Comunicación
-                          const SectionHeader(icon: Icons.contact_mail, title: 'Comunicación'),
-                          const SizedBox(height: 16),
-                          AppTextField(
-                            controller: emailController,
-                            label: 'Correo electrónico',
-                            hint: 'tu@correo.com',
-                            icon: Icons.email_outlined,
-                            keyboardType: TextInputType.emailAddress,
-                          ),
-                          const SizedBox(height: 20),
-                          AppTextField(
-                            controller: telefonoController,
-                            label: 'Teléfono',
-                            hint: '+56 9 1234 5678',
-                            icon: Icons.phone_outlined,
-                            keyboardType: TextInputType.phone,
-                          ),
-                          const SizedBox(height: 32),
-                          // Seguridad
-                          const SectionHeader(icon: Icons.security, title: 'Seguridad'),
-                          const SizedBox(height: 16),
-                          AppTextField(
-                            controller: passwordController,
-                            label: 'Contraseña',
-                            hint: '••••••••',
-                            icon: Icons.lock_outline,
-                            obscureText: !isPasswordVisible,
-                            suffixIcon: IconButton(
-                              onPressed: () => setState(() => isPasswordVisible = !isPasswordVisible),
-                              icon: Icon(
-                                isPasswordVisible ? Icons.visibility_off : Icons.visibility, 
-                                size: 20,
-                                color: AppTheme.getTextSecondary(context),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          AppTextField(
-                            controller: confirmPasswordController,
-                            label: 'Confirmar Contraseña',
-                            hint: '••••••••',
-                            icon: Icons.lock_outline,
-                            obscureText: !isConfirmPasswordVisible,
-                            suffixIcon: IconButton(
-                              onPressed: () => setState(() => isConfirmPasswordVisible = !isConfirmPasswordVisible),
-                              icon: Icon(
-                                isConfirmPasswordVisible ? Icons.visibility_off : Icons.visibility, 
-                                size: 20,
-                                color: AppTheme.getTextSecondary(context),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          // Accept terms
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Checkbox(
-                                value: acceptTerms,
-                                onChanged: (value) => setState(() => acceptTerms = value ?? false),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  'Acepto los términos y condiciones de uso',
-                                  style: AppTheme.getBodyMedium(context),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 32),
-                          // Register button
-                          ElevatedButton(
-                            onPressed: isLoading || !acceptTerms ? null : _handleRegister,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppTheme.primaryColor,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                            ),
-                            child: isLoading
-                              ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              const SizedBox(height: 32),
+                              // Header
+                              Text('Crear Cuenta', style: AppTheme.getHeadingMedium(context)),
+                              const SizedBox(height: 8),
+                              Text('Completa los datos para registrarte', style: AppTheme.getBodyMedium(context)),
+                              const SizedBox(height: 32),
+                              // Información Personal
+                              const SectionHeader(icon: Icons.person, title: 'Información Personal'),
+                              const SizedBox(height: 16),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: AppTextField(
+                                      controller: nombreController,
+                                      label: 'Nombre',
+                                      hint: 'Tu nombre',
+                                      icon: Icons.person_outline,
+                                      keyboardType: TextInputType.name,
+                                    ),
                                   ),
-                                )
-                              : const Text('Registrarse', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                          ),
-                          const SizedBox(height: 32),
-                          // Divider
-                          Row(
-                            children: [
-                              Expanded(child: Divider(color: AppTheme.getBorderLight(context))),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 16), 
-                                child: Text('o', style: AppTheme.getBodyMedium(context)),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: AppTextField(
+                                      controller: apellidoController,
+                                      label: 'Apellido',
+                                      hint: 'Tu apellido',
+                                      icon: Icons.person_outline,
+                                      keyboardType: TextInputType.name,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              Expanded(child: Divider(color: AppTheme.getBorderLight(context))),
+                              const SizedBox(height: 20),
+                              AppTextField(
+                                controller: rutController,
+                                label: 'RUT',
+                                hint: '12345678-9',
+                                icon: Icons.badge_outlined,
+                              ),
+                              const SizedBox(height: 32),
+                              // Comunicación
+                              const SectionHeader(icon: Icons.contact_mail, title: 'Comunicación'),
+                              const SizedBox(height: 16),
+                              AppTextField(
+                                controller: emailController,
+                                label: 'Correo electrónico',
+                                hint: 'tu@correo.com',
+                                icon: Icons.email_outlined,
+                                keyboardType: TextInputType.emailAddress,
+                              ),
+                              const SizedBox(height: 20),
+                              AppTextField(
+                                controller: telefonoController,
+                                label: 'Teléfono',
+                                hint: '+56 9 1234 5678',
+                                icon: Icons.phone_outlined,
+                                keyboardType: TextInputType.phone,
+                              ),
+                              const SizedBox(height: 32),
+                              // Seguridad
+                              const SectionHeader(icon: Icons.security, title: 'Seguridad'),
+                              const SizedBox(height: 16),
+                              AppTextField(
+                                controller: passwordController,
+                                label: 'Contraseña',
+                                hint: '••••••••',
+                                icon: Icons.lock_outline,
+                                obscureText: !isPasswordVisible,
+                                suffixIcon: IconButton(
+                                  onPressed: () => setState(() => isPasswordVisible = !isPasswordVisible),
+                                  icon: Icon(
+                                    isPasswordVisible ? Icons.visibility_off : Icons.visibility, 
+                                    size: 20,
+                                    color: AppTheme.getTextSecondary(context),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              AppTextField(
+                                controller: confirmPasswordController,
+                                label: 'Confirmar Contraseña',
+                                hint: '••••••••',
+                                icon: Icons.lock_outline,
+                                obscureText: !isConfirmPasswordVisible,
+                                suffixIcon: IconButton(
+                                  onPressed: () => setState(() => isConfirmPasswordVisible = !isConfirmPasswordVisible),
+                                  icon: Icon(
+                                    isConfirmPasswordVisible ? Icons.visibility_off : Icons.visibility, 
+                                    size: 20,
+                                    color: AppTheme.getTextSecondary(context),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              // Accept terms
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Checkbox(
+                                    value: acceptTerms,
+                                    onChanged: (value) => setState(() => acceptTerms = value ?? false),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      'Acepto los términos y condiciones de uso',
+                                      style: AppTheme.getBodyMedium(context),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 32),
+                              // Register button
+                              ElevatedButton(
+                                onPressed: isLoading || !acceptTerms ? null : _handleRegister,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppTheme.primaryColor,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                child: isLoading
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    )
+                                  : const Text('Registrarse', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                              ),
+                              const SizedBox(height: 32),
+                              // Divider
+                              Row(
+                                children: [
+                                  Expanded(child: Divider(color: AppTheme.getBorderLight(context))),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 16), 
+                                    child: Text('o', style: AppTheme.getBodyMedium(context)),
+                                  ),
+                                  Expanded(child: Divider(color: AppTheme.getBorderLight(context))),
+                                ],
+                              ),
+                              const SizedBox(height: 32),
+                              // Login text
+                              Center(
+                                child: InteractiveLink(
+                                  text: '¿Ya tienes una cuenta? Inicia Sesión',
+                                  onTap: () => Get.back(),
+                                ),
+                              ),
                             ],
                           ),
-                          const SizedBox(height: 32),
-                          // Login text
-                          Center(
-                            child: InteractiveLink(
-                              text: '¿Ya tienes una cuenta? Inicia Sesión',
-                              onTap: () => Get.back(),
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          ),
+          // Botón de cambio de tema
+          const ThemeToggleButton(),
+        ],
       ),
     );
   }
