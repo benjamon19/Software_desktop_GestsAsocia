@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../utils/app_theme.dart';
+import '../utils/app_routes.dart';
+import '../widgets/interactive_link.dart';
 import 'dart:math';
 
 class LoginPage extends StatefulWidget {
@@ -73,14 +75,14 @@ class _LoginPageState extends State<LoginPage> {
                             ],
                           ),
                           const SizedBox(height: 32),
-                          // Email field
+                          // Email/RUT field
                           TextFormField(
                             controller: emailController,
-                            keyboardType: TextInputType.emailAddress,
+                            keyboardType: TextInputType.text,
                             decoration: _inputDecoration(
-                              'Correo electrónico',
-                              'ejemplo@correo.com',
-                              Icons.email_outlined,
+                              'RUT o Correo electrónico',
+                              'Ej: 12345678-9 o ejemplo@correo.com',
+                              Icons.person_outline,
                             ),
                           ),
                           const SizedBox(height: 24),
@@ -141,10 +143,10 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           const SizedBox(height: 32),
                           // Register text
-                          const Center(
-                            child: Text(
-                              '¿No tienes una cuenta? Regístrate',
-                              style: TextStyle(color: AppTheme.primaryColor, fontSize: 14),
+                          Center(
+                            child: InteractiveLink(
+                              text: '¿No tienes una cuenta? Regístrate',
+                              onTap: () => Get.toNamed(AppRoutes.register),
                             ),
                           ),
                         ],
