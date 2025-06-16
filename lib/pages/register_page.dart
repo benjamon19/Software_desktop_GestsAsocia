@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../utils/app_theme.dart';
-import '../widgets/interactive_link.dart';
-import '../widgets/shared_widgets.dart';
-import '../widgets/theme_toggle_button.dart';
+import '../../controllers/auth_controller.dart';
+import '../../services/auth_helper.dart';
+import '../../utils/app_theme.dart';
+import '../../widgets/interactive_link.dart';
+import '../../widgets/shared_widgets.dart';
+import '../../widgets/theme_toggle_button.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -24,7 +26,8 @@ class _RegisterPageState extends State<RegisterPage> {
   bool isPasswordVisible = false;
   bool isConfirmPasswordVisible = false;
   bool acceptTerms = false;
-  bool isLoading = false;
+
+  final AuthController authController = Get.find<AuthController>();
 
   @override
   void dispose() {
@@ -124,7 +127,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               AppTextField(
                                 controller: telefonoController,
                                 label: 'Teléfono',
-                                hint: '+56 9 1234 5678',
+                                hint: '9 1234 5678',
                                 icon: Icons.phone_outlined,
                                 keyboardType: TextInputType.phone,
                               ),
@@ -182,15 +185,15 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                               const SizedBox(height: 32),
                               // Register button
-                              ElevatedButton(
-                                onPressed: isLoading || !acceptTerms ? null : _handleRegister,
+                              Obx(() => ElevatedButton(
+                                onPressed: authController.isLoading.value || !acceptTerms ? null : _handleRegister,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppTheme.primaryColor,
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                 ),
-                                child: isLoading
+                                child: authController.isLoading.value
                                   ? const SizedBox(
                                       height: 20,
                                       width: 20,
@@ -200,7 +203,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                       ),
                                     )
                                   : const Text('Registrarse', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                              ),
+                              )),
                               const SizedBox(height: 32),
                               // Divider
                               Row(
@@ -239,46 +242,50 @@ class _RegisterPageState extends State<RegisterPage> {
   }
 
   Future<void> _handleRegister() async {
-    // Validaciones básicas
-    if (nombreController.text.isEmpty ||
-        apellidoController.text.isEmpty ||
-        rutController.text.isEmpty ||
-        emailController.text.isEmpty ||
-        telefonoController.text.isEmpty ||
-        passwordController.text.isEmpty ||
-        confirmPasswordController.text.isEmpty) {
-      Get.snackbar(
-        'Error',
-        'Todos los campos son obligatorios',
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.red.shade800,
-      );
-      return;
-    }
-
-    if (passwordController.text != confirmPasswordController.text) {
-      Get.snackbar(
-        'Error', 
-        'Las contraseñas no coinciden',
-        backgroundColor: Colors.red.shade100,
-        colorText: Colors.red.shade800,
-      );
-      return;
-    }
-
-    setState(() => isLoading = true);
-    await Future.delayed(const Duration(seconds: 2));
-    
-    Get.snackbar(
-      'Éxito',
-      'Registro completado exitosamente',
-      backgroundColor: Colors.green.shade100,
-      colorText: Colors.green.shade800,
+    // Validar campos usando el helper
+    String? error = AuthHelper.validateRegisterFields(
+      nombre: nombreController.text.trim(),
+      apellido: apellidoController.text.trim(),
+      rut: rutController.text.trim(),
+      email: emailController.text.trim(),
+      telefono: telefonoController.text.trim(),
+      password: passwordController.text,
+      confirmPassword: confirmPasswordController.text,
     );
-    
-    await Future.delayed(const Duration(seconds: 1));
-    Get.back();
-    
-    setState(() => isLoading = false);
+
+    if (error != null) {
+      Get.snackbar('Error', error);
+      return;
+    }
+
+    // Realizar registro
+    bool success = await authController.register(
+      email: emailController.text.trim(),
+      password: passwordController.text,
+      nombre: nombreController.text.trim(),
+      apellido: apellidoController.text.trim(),
+      telefono: telefonoController.text.trim(),
+      rut: rutController.text.trim(),
+    );
+
+    // Limpiar campos si fue exitoso
+    if (success) {
+      _clearFields();
+    }
+  }
+
+  void _clearFields() {
+    nombreController.clear();
+    apellidoController.clear();
+    rutController.clear();
+    emailController.clear();
+    telefonoController.clear();
+    passwordController.clear();
+    confirmPasswordController.clear();
+    setState(() {
+      isPasswordVisible = false;
+      isConfirmPasswordVisible = false;
+      acceptTerms = false;
+    });
   }
 }
