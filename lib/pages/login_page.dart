@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../utils/app_theme.dart';
-import '../utils/app_routes.dart';
-import '../widgets/interactive_link.dart';
-import '../widgets/shared_widgets.dart';
-import '../widgets/theme_toggle_button.dart';
+import '../../controllers/auth_controller.dart';
+import '../../utils/app_theme.dart';
+import '../../utils/app_routes.dart';
+import '../../widgets/interactive_link.dart';
+import '../../widgets/shared_widgets.dart';
+import '../../widgets/theme_toggle_button.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -19,7 +20,8 @@ class _LoginPageState extends State<LoginPage> {
   
   bool isPasswordVisible = false;
   bool rememberMe = false;
-  bool isLoading = false;
+
+  final AuthController authController = Get.find<AuthController>();
 
   @override
   void dispose() {
@@ -104,15 +106,15 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                               const SizedBox(height: 32),
                               // Login button
-                              ElevatedButton(
-                                onPressed: isLoading ? null : _handleLogin,
+                              Obx(() => ElevatedButton(
+                                onPressed: authController.isLoading.value ? null : _handleLogin,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppTheme.primaryColor,
                                   foregroundColor: Colors.white,
                                   padding: const EdgeInsets.symmetric(vertical: 16),
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                 ),
-                                child: isLoading
+                                child: authController.isLoading.value
                                   ? const SizedBox(
                                       height: 20,
                                       width: 20,
@@ -122,7 +124,7 @@ class _LoginPageState extends State<LoginPage> {
                                       ),
                                     )
                                   : const Text('Iniciar Sesión', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                              ),
+                              )),
                               const SizedBox(height: 32),
                               // Divider
                               Row(
@@ -161,14 +163,26 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   Future<void> _handleLogin() async {
-    setState(() => isLoading = true);
-    await Future.delayed(const Duration(seconds: 1));
-    Get.snackbar(
-      'Información',
-      'Funcionalidad de login pendiente de implementar',
-      backgroundColor: Colors.blue.shade100,
-      colorText: Colors.blue.shade800,
-    );
-    setState(() => isLoading = false);
+    String emailOrRut = emailController.text.trim();
+    String password = passwordController.text;
+
+    // Validaciones básicas
+    if (emailOrRut.isEmpty || password.isEmpty) {
+      Get.snackbar('Error', 'Completa todos los campos');
+      return;
+    }
+
+    // El AuthController se encarga de todo (email o RUT)
+    bool success = await authController.login(emailOrRut, password);
+
+    // Limpiar campos si fue exitoso
+    if (success) {
+      emailController.clear();
+      passwordController.clear();
+      setState(() {
+        isPasswordVisible = false;
+        rememberMe = false;
+      });
+    }
   }
 }
