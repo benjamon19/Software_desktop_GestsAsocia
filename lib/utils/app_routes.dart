@@ -3,7 +3,7 @@ import '../bindings/auth_binding.dart';
 import '../pages/splash_screen.dart';
 import '../pages/login_page.dart';
 import '../pages/register_page.dart';
-import '../pages/dashboard_page.dart';
+import '../pages/dashboard.dart';
 
 class AppRoutes {
   static const String splash = '/';
