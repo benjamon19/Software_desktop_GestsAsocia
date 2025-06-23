@@ -57,9 +57,9 @@ class LeftPanel extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.05),
+                      color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.white.withOpacity(0.1)),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                     ),
                     child: Column(
                       children: features
@@ -154,7 +154,7 @@ class AppTextField extends StatelessWidget {
           color: AppTheme.getTextSecondary(context),
         ),
         hintStyle: TextStyle(
-          color: AppTheme.getTextSecondary(context).withOpacity(0.7),
+          color: AppTheme.getTextSecondary(context).withValues(alpha: 0.7),
         ),
       ),
     );
@@ -200,7 +200,7 @@ class BackgroundPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = AppTheme.primaryColor.withOpacity(0.05)
+      ..color = AppTheme.primaryColor.withValues(alpha: 0.05)
       ..style = PaintingStyle.fill;
     final path = Path();
 
@@ -219,7 +219,7 @@ class BackgroundPainter extends CustomPainter {
     }
 
     final circlePaint = Paint()
-      ..color = AppTheme.primaryColor.withOpacity(0.03)
+      ..color = AppTheme.primaryColor.withValues(alpha: 0.03)
       ..style = PaintingStyle.fill;
     canvas.drawCircle(Offset(size.width * 0.1, size.height * 0.2), 150, circlePaint);
     canvas.drawCircle(Offset(size.width * 0.9, size.height * 0.8), 200, circlePaint);

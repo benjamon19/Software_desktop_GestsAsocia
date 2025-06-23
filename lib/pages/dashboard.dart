@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/auth_controller.dart';
-import '../controllers/theme_controller.dart'; // Agregar import
+import '../controllers/theme_controller.dart'; 
 import '../widgets/dashboard/sidebar_menu.dart';
 import '../widgets/dashboard/top_bar.dart';
 import '../widgets/dashboard/dashboard_content.dart';
 import '../widgets/dashboard/page_content.dart';
 import '../utils/dashboard_data.dart';
-import '../utils/app_theme.dart'; // Agregar import
+import '../utils/app_theme.dart'; 
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -18,14 +18,14 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   final AuthController authController = Get.find<AuthController>();
-  final ThemeController themeController = Get.find<ThemeController>(); // Agregar esto
+  final ThemeController themeController = Get.find<ThemeController>(); 
   bool isDrawerOpen = true;
   int selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.getBackgroundColor(context), // Usar tema dinámico
+      backgroundColor: AppTheme.getBackgroundColor(context), 
       body: Row(
         children: [
           // Sidebar Menu

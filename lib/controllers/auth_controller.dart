@@ -12,7 +12,8 @@ class AuthController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    print('=== INICIALIZANDO AUTH CONTROLLER ===');
+    // Usando Get.log para logging en desarrollo
+    Get.log('=== INICIALIZANDO AUTH CONTROLLER ===');
     
     // Escuchar cambios en el estado de autenticación
     firebaseUser.bindStream(FirebaseService.authStateChanges);
@@ -23,8 +24,8 @@ class AuthController extends GetxController {
 
   // Manejar cambios de autenticación
   void _handleAuthChanged(User? user) async {
-    print('=== CAMBIO DE ESTADO AUTH ===');
-    print('Usuario: ${user?.email ?? "null"}');
+    Get.log('=== CAMBIO DE ESTADO AUTH ===');
+    Get.log('Usuario: ${user?.email ?? "null"}');
 
     if (user != null) {
       // Usuario logueado - cargar sus datos
@@ -32,26 +33,26 @@ class AuthController extends GetxController {
 
       // Navegar al dashboard si los datos se cargan correctamente
       if (currentUser.value != null) {
-        print('=== NAVEGANDO A DASHBOARD ===');
+        Get.log('=== NAVEGANDO A DASHBOARD ===');
         Get.offAllNamed('/dashboard');
       }
     } else {
       // Usuario deslogueado - limpiar datos
       currentUser.value = null;
-      print('=== USUARIO DESLOGUEADO ===');
+      Get.log('=== USUARIO DESLOGUEADO ===');
     }
   }
 
   // Cargar datos del usuario
   Future<void> _loadUserData(String uid) async {
     try {
-      print('=== CARGANDO DATOS DEL USUARIO ===');
+      Get.log('=== CARGANDO DATOS DEL USUARIO ===');
       Usuario? usuario = await FirebaseService.getUser(uid);
       currentUser.value = usuario;
-      print('=== DATOS CARGADOS: ${usuario?.nombreCompleto} ===');
+      Get.log('=== DATOS CARGADOS: ${usuario?.nombreCompleto} ===');
     } catch (e) {
-      print('=== ERROR CARGANDO DATOS ===');
-      print('Error: $e');
+      Get.log('=== ERROR CARGANDO DATOS ===');
+      Get.log('Error: $e');
       _showErrorSnackbar("Error", "No se pudieron cargar los datos del usuario");
     }
   }
@@ -66,7 +67,7 @@ class AuthController extends GetxController {
     required String rut,
   }) async {
     try {
-      print('=== INICIANDO PROCESO DE REGISTRO ===');
+      Get.log('=== INICIANDO PROCESO DE REGISTRO ===');
       isLoading.value = true;
 
       // Validar RUT
@@ -76,14 +77,14 @@ class AuthController extends GetxController {
       }
 
       // Paso 1: Crear usuario principal con email
-      print('=== PASO 1: CREANDO AUTH CON EMAIL ===');
+      Get.log('=== PASO 1: CREANDO AUTH CON EMAIL ===');
       UserCredential result = await FirebaseService.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
       // Paso 2: Crear objeto Usuario
-      print('=== PASO 2: CREANDO OBJETO USUARIO ===');
+      Get.log('=== PASO 2: CREANDO OBJETO USUARIO ===');
       Usuario nuevoUsuario = Usuario(
         nombre: nombre,
         apellido: apellido,
@@ -94,29 +95,29 @@ class AuthController extends GetxController {
       );
 
       // Paso 3: Guardar en Firestore
-      print('=== PASO 3: GUARDANDO EN FIRESTORE ===');
+      Get.log('=== PASO 3: GUARDANDO EN FIRESTORE ===');
       await FirebaseService.saveUser(result.user!.uid, nuevoUsuario);
 
       // Paso 4: Crear entrada adicional para login con RUT
-      print('=== PASO 4: CREANDO ENTRADA PARA LOGIN CON RUT ===');
+      Get.log('=== PASO 4: CREANDO ENTRADA PARA LOGIN CON RUT ===');
       try {
         await FirebaseService.createUserWithEmailAndPassword(
-          email: '${rut}@rut.local',
+          email: '$rut@rut.local',
           password: password,
         );
-        print('Usuario RUT creado: ${rut}@rut.local');
+        Get.log('Usuario RUT creado: $rut@rut.local');
       } catch (e) {
-        print('No se pudo crear usuario RUT (puede que ya exista): $e');
+        Get.log('No se pudo crear usuario RUT (puede que ya exista): $e');
         // No es crítico si falla
       }
 
-      print('=== REGISTRO COMPLETADO EXITOSAMENTE ===');
+      Get.log('=== REGISTRO COMPLETADO EXITOSAMENTE ===');
       _showSuccessSnackbar("¡Éxito!", "Usuario registrado correctamente");
       return true;
 
     } catch (e) {
-      print('=== ERROR EN REGISTRO COMPLETO ===');
-      print('Error: $e');
+      Get.log('=== ERROR EN REGISTRO COMPLETO ===');
+      Get.log('Error: $e');
       
       String errorMessage = _extractErrorMessage(e);
       _showErrorSnackbar("Error de Registro", errorMessage);
@@ -129,7 +130,7 @@ class AuthController extends GetxController {
   // Login de usuario - SIMPLE CON BÚSQUEDA EN FIRESTORE
   Future<bool> login(String input, String password) async {
     try {
-      print('LOGIN - Input: "$input"');
+      Get.log('LOGIN - Input: "$input"');
       isLoading.value = true;
 
       if (input.trim().isEmpty || password.isEmpty) {
@@ -141,7 +142,7 @@ class AuthController extends GetxController {
 
       // Si NO tiene @ (es RUT), buscar el email en Firestore
       if (!input.contains('@')) {
-        print('Es RUT, buscando email en Firestore...');
+        Get.log('Es RUT, buscando email en Firestore...');
         
         final usuarios = await FirebaseService.getCollection('usuarios');
         
@@ -149,7 +150,7 @@ class AuthController extends GetxController {
           final userData = doc.data() as Map<String, dynamic>;
           if (userData['rut'] == input) {
             emailParaLogin = userData['email'];
-            print('Email encontrado: $emailParaLogin');
+            Get.log('Email encontrado: $emailParaLogin');
             break;
           }
         }
@@ -160,7 +161,7 @@ class AuthController extends GetxController {
         }
       }
 
-      print('Haciendo login con email: $emailParaLogin');
+      Get.log('Haciendo login con email: $emailParaLogin');
 
       await FirebaseService.signInWithEmailAndPassword(
         email: emailParaLogin,
@@ -171,7 +172,7 @@ class AuthController extends GetxController {
       return true;
 
     } catch (e) {
-      print('ERROR LOGIN: $e');
+      Get.log('ERROR LOGIN: $e');
       String errorMessage = _extractErrorMessage(e);
       _showErrorSnackbar("Error de Login", errorMessage);
       return false;

@@ -5,50 +5,50 @@ class AppTheme {
   static const Color primaryColor = Color(0xFF4299E1);
   static const Color secondaryColor = Color(0xFF2D3748);
   
-  // Colores modo claro (tu estructura original)
-  static const Color backgroundColor = Color(0xFFF5F6FA);
-  static const Color surfaceColor = Colors.white;
+  // Colores modo claro - Tonalidad más suave y menos colorida
+  static const Color backgroundColor = Color(0xFFF4F5F7);  // Gris claro más neutro
+  static const Color surfaceColor = Color(0xFFFAFAFB);     // Gris muy claro
   
-  // Colores de texto modo claro
-  static const Color textPrimary = Color(0xFF1A202C);
+  // Colores de texto modo claro - Más suaves
+  static const Color textPrimary = Color(0xFF2D3748);      // Menos negro, más gris
   static const Color textSecondary = Color(0xFF4A5568);
   static const Color textTertiary = Color(0xFF718096);
-  static const Color textLight = Color(0xFFA0AEC0);
+  static const Color textLight = Color(0xFF9CA3AF);
   
-  // Colores de borde e input modo claro
-  static const Color borderLight = Color(0xFFE2E8F0);
-  static const Color inputFill = Color(0xFFF7FAFC);
-  static const Color inputBackground = Color(0xFFF7FAFC);
-  static const Color inputBackgroundFocused = Color(0xFFEDF2F7);
+  // Colores de borde e input modo claro - Más suaves y menos blancos
+  static const Color borderLight = Color(0xFFE2E8F0);      // Gris suave
+  static const Color inputFill = Color(0xFFF7F8FA);        // Gris muy claro, no tan blanco
+  static const Color inputBackground = Color(0xFFF7F8FA);  // Gris muy claro
+  static const Color inputBackgroundFocused = Color(0xFFF0F2F5);
   
-  // Colores modo oscuro (más claros y cómodos)
-  static const Color darkBackgroundColor = Color(0xFF1A1A1A); // Gris oscuro pero no tanto
-  static const Color darkSurfaceColor = Color(0xFF2D2D2D);    // Gris medio para el panel
+  // Colores modo oscuro - Fondos mejorados
+  static const Color darkBackgroundColor = Color(0xFF1A1D23); // Azul grisáceo oscuro
+  static const Color darkSurfaceColor = Color(0xFF252932);    // Azul grisáceo para panel
   
   // Colores de texto modo oscuro (más claros y legibles)
   static const Color darkTextPrimary = Color(0xFFFFFFFF);    // Blanco puro para títulos
-  static const Color darkTextSecondary = Color(0xFFE0E0E0);  // Gris muy claro (más legible)
-  static const Color darkTextTertiary = Color(0xFFBDBDBD);   // Gris claro
-  static const Color darkTextLight = Color(0xFF9E9E9E);      // Gris medio
+  static const Color darkTextSecondary = Color(0xFFE2E4E9);  // Gris muy claro (más legible)
+  static const Color darkTextTertiary = Color(0xFFC1C7D0);   // Gris claro
+  static const Color darkTextLight = Color(0xFF9CA3AF);      // Gris medio
   
   // Colores de borde e input modo oscuro (más equilibrados)
-  static const Color darkBorderLight = Color(0xFF404040);     // Gris medio más visible
-  static const Color darkInputFill = Color(0xFF363636);       // Gris para inputs más claro
-  static const Color darkInputBackground = Color(0xFF363636);
-  static const Color darkInputBackgroundFocused = Color(0xFF404040);
+  static const Color darkBorderLight = Color(0xFF3A3F4A);     // Gris azulado
+  static const Color darkInputFill = Color(0xFF2A2F3A);       // Azul grisáceo para inputs
+  static const Color darkInputBackground = Color(0xFF2A2F3A);
+  static const Color darkInputBackgroundFocused = Color(0xFF343A47);
   
   // Colores de estado (iguales para ambos modos)
   static const Color errorColor = Color(0xFFE53E3E);
   static const Color successColor = Color(0xFF38A169);
   static const Color warningColor = Color(0xFFD69E2E);
   
-  // Etiquetas y captions modo claro
+  // Etiquetas y captions modo claro - Más neutros
   static const Color labelMedium = Color(0xFF4A5568);
-  static const Color caption = Color(0xFF718096);
+  static const Color caption = Color(0xFF6B7280);         // Más gris, menos azulado
   
   // Etiquetas y captions modo oscuro (más claros)
-  static const Color darkLabelMedium = Color(0xFFE0E0E0);    // Más claro para mejor legibilidad
-  static const Color darkCaption = Color(0xFFBDBDBD);       // Gris claro para captions
+  static const Color darkLabelMedium = Color(0xFFE2E4E9);    // Más claro para mejor legibilidad
+  static const Color darkCaption = Color(0xFFC1C7D0);       // Gris claro para captions
   
   // Espaciados
   static const double spaceXS = 4.0;
@@ -252,11 +252,9 @@ class AppTheme {
       primary: primaryColor,
       secondary: secondaryColor,
       surface: surfaceColor,
-      background: backgroundColor,
       onPrimary: Colors.white,
       onSecondary: Colors.white,
       onSurface: textPrimary,
-      onBackground: textPrimary,
     ),
     scaffoldBackgroundColor: backgroundColor,
     appBarTheme: const AppBarTheme(
@@ -307,11 +305,9 @@ class AppTheme {
       primary: primaryColor,
       secondary: Color(0xFF404040),          // Gris más claro y visible
       surface: darkSurfaceColor,
-      background: darkBackgroundColor,
       onPrimary: Colors.white,
       onSecondary: Colors.white,
       onSurface: darkTextPrimary,
-      onBackground: darkTextPrimary,
     ),
     scaffoldBackgroundColor: darkBackgroundColor,
     appBarTheme: const AppBarTheme(
@@ -331,7 +327,7 @@ class AppTheme {
         borderSide: const BorderSide(color: primaryColor, width: 2),
       ),
       labelStyle: const TextStyle(color: darkTextSecondary),
-      hintStyle: TextStyle(color: darkTextSecondary.withOpacity(0.7)),
+      hintStyle: TextStyle(color: darkTextSecondary.withValues(alpha: 0.7)),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
