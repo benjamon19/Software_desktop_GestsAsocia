@@ -87,37 +87,7 @@ class TopBar extends StatelessWidget {
           ),
           const SizedBox(width: 20),
           
-          // Notifications
-          IconButton(
-            icon: Stack(
-              children: [
-                Icon(
-                  Icons.notifications_outlined, 
-                  color: AppTheme.getTextPrimary(context),
-                ),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFEF4444),
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 8,
-                      minHeight: 8,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            onPressed: () {
-            },
-          ),
-          const SizedBox(width: 12),
-          
-          // User Menu
+          // User Menu (sin campana)
           _buildUserMenu(context),
         ],
       ),
