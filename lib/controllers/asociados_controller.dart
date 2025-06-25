@@ -109,7 +109,7 @@ class AsociadosController extends GetxController {
       'Asociado Eliminado', 
       'El asociado ha sido eliminado del sistema',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Get.theme.colorScheme.error.withOpacity(0.8),
+      backgroundColor: Get.theme.colorScheme.error.withValues(alpha: 0.8),
       colorText: Get.theme.colorScheme.onError,
     );
   }
@@ -144,7 +144,7 @@ class AsociadosController extends GetxController {
       'Generar QR', 
       'Código QR generado exitosamente',
       snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Get.theme.colorScheme.primary.withOpacity(0.8),
+      backgroundColor: Get.theme.colorScheme.primary.withValues(alpha: 0.8),
       colorText: Get.theme.colorScheme.onPrimary,
     );
   }
