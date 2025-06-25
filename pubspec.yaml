@@ -32,9 +32,9 @@ dependencies:
     sdk: flutter
   
   # Firebase 
-  firebase_core: ^3.6.0
-  firebase_auth: ^5.3.1
-  cloud_firestore: ^5.4.3
+  firebase_core: ^3.8.0
+  firebase_auth: ^5.4.0  
+  cloud_firestore: ^5.5.0
   
   # Estado y navegación
   get: ^4.6.6

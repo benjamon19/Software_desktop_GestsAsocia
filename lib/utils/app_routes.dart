@@ -16,7 +16,6 @@ class AppRoutes {
     GetPage(
       name: splash,
       page: () => const SplashScreen(),
-      // Sin binding aquí ya que ThemeController se inicializa en main
     ),
     GetPage(
       name: login,

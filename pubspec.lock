@@ -201,10 +201,10 @@ packages:
     dependency: "direct main"
     description:
       name: form_builder_validators
-      sha256: cd617fa346250293ff3e2709961d0faf7b80e6e4f0ff7b500126b28d7422dd67
+      sha256: "1b03c74d1db740890e6af803b43e5ebe56f8fa1ff5609cbf744e8d980dc5f8c6"
       url: "https://pub.dev"
     source: hosted
-    version: "11.1.2"
+    version: "11.2.0"
   get:
     dependency: "direct main"
     description:
@@ -620,4 +620,4 @@ packages:
     version: "1.1.0"
 sdks:
   dart: ">=3.8.0 <4.0.0"
-  flutter: ">=3.29.0"
+  flutter: ">=3.32.0"
