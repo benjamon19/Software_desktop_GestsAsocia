@@ -20,9 +20,8 @@ class SidebarMenu extends StatelessWidget {
         color: AppTheme.getSurfaceColor(context),
         boxShadow: [
           BoxShadow(
-            // Crear sombra dinámica basada en el tema
             color: Theme.of(context).brightness == Brightness.dark 
-                ? Colors.black.withOpacity(0.3)
+                ? Colors.black.withValues(alpha: 0.3)
                 : const Color(0x1A000000),
             blurRadius: 10,
             offset: const Offset(2, 0),
@@ -45,7 +44,7 @@ class SidebarMenu extends StatelessWidget {
                 Text(
                   'GestAsocia',
                   style: TextStyle(
-                    color: AppTheme.getTextPrimary(context), // Método correcto
+                    color: AppTheme.getTextPrimary(context), 
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
                   ),
@@ -53,13 +52,13 @@ class SidebarMenu extends StatelessWidget {
               ],
             ),
           ),
-          Divider(height: 1, color: AppTheme.getBorderLight(context)), // Método correcto
+          Divider(height: 1, color: AppTheme.getBorderLight(context)), 
                      
-          // Menu Items (sin configuración)
+          // Menu Items 
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(vertical: 10),
-              itemCount: DashboardData.menuItems.length - 1, // Excluimos configuración
+              itemCount: DashboardData.menuItems.length - 1, 
               itemBuilder: (context, index) {
                 final item = DashboardData.menuItems[index];
                 final isSelected = selectedIndex == index;
@@ -68,7 +67,7 @@ class SidebarMenu extends StatelessWidget {
                   margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
                   decoration: BoxDecoration(
                     color: isSelected
-                         ? AppTheme.primaryColor.withOpacity(0.1)
+                         ? AppTheme.primaryColor.withValues(alpha: 0.1)
                          : Colors.transparent,
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -99,15 +98,12 @@ class SidebarMenu extends StatelessWidget {
             ),
           ),
           
-          // Separador
           Divider(height: 1, color: AppTheme.getBorderLight(context)),
-          
-          // Configuración al final
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: selectedIndex == 5 // Asumiendo que configuración es el índice 5
-                   ? AppTheme.primaryColor.withOpacity(0.1)
+              color: selectedIndex == 5 
+                   ? AppTheme.primaryColor.withValues(alpha: 0.1)
                    : Colors.transparent,
               borderRadius: BorderRadius.circular(8),
             ),
@@ -131,11 +127,9 @@ class SidebarMenu extends StatelessWidget {
                   fontSize: 15,
                 ),
               ),
-              onTap: () => onItemSelected(5), // Índice de configuración
+              onTap: () => onItemSelected(5), 
             ),
           ),
-          
-          const SizedBox(height: 16), // Espacio al final
         ],
       ),
     );

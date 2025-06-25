@@ -28,8 +28,8 @@ class TopBar extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: Theme.of(context).brightness == Brightness.dark 
-                ? Colors.black.withOpacity(0.3)
-                : Colors.grey.withOpacity(0.08),
+                ? Colors.black.withValues(alpha: 0.3)
+                : Colors.grey.withValues(alpha: 0.08),
             blurRadius: 5,
             offset: const Offset(0, 2),
           ),
@@ -63,7 +63,7 @@ class TopBar extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
               color: Theme.of(context).brightness == Brightness.dark 
-                  ? AppTheme.darkSurfaceColor.withOpacity(0.8)
+                  ? AppTheme.darkSurfaceColor.withValues(alpha: 0.8)
                   : AppTheme.backgroundColor,
               borderRadius: BorderRadius.circular(20),
             ),
@@ -87,38 +87,7 @@ class TopBar extends StatelessWidget {
           ),
           const SizedBox(width: 20),
           
-          // Notifications
-          IconButton(
-            icon: Stack(
-              children: [
-                Icon(
-                  Icons.notifications_outlined, 
-                  color: AppTheme.getTextPrimary(context),
-                ),
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFEF4444),
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: const BoxConstraints(
-                      minWidth: 8,
-                      minHeight: 8,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            onPressed: () {
-              // TODO: Implement notifications
-            },
-          ),
-          const SizedBox(width: 12),
-          
-          // User Menu
+          // User Menu (sin campana)
           _buildUserMenu(context),
         ],
       ),
@@ -223,7 +192,7 @@ class TopBar extends StatelessWidget {
           child: Divider(
             height: 1,
             thickness: 0.5,
-            color: AppTheme.getBorderLight(context).withOpacity(0.3),
+            color: AppTheme.getBorderLight(context).withValues(alpha: 0.3),
           ),
         ),
         const PopupMenuItem(
@@ -244,10 +213,8 @@ class TopBar extends StatelessWidget {
   void _handleMenuAction(String value, BuildContext context) {
     switch (value) {
       case 'profile':
-        // TODO: Navigate to profile
         break;
       case 'settings':
-        // TODO: Navigate to settings
         break;
       case 'logout':
         _showLogoutDialog(context);

@@ -50,16 +50,16 @@ class CustomTextField extends StatelessWidget {
         hintText: hint,
         hintStyle: AppTheme.captionStyle.copyWith(color: AppTheme.textLight),
         prefixIcon: prefixIcon != null 
-          ? Icon(prefixIcon, size: 20, color: AppTheme.textTertiary)
+           ? Icon(prefixIcon, size: 20, color: AppTheme.textTertiary)
           : null,
         suffixIcon: suffixIcon != null 
-          ? IconButton(
+           ? IconButton(
               onPressed: onSuffixIconPressed,
               icon: Icon(suffixIcon, size: 20, color: AppTheme.textTertiary),
             )
           : null,
         filled: true,
-        fillColor: enabled ? AppTheme.inputFill : AppTheme.inputFill.withOpacity(0.5),
+        fillColor: enabled ? AppTheme.inputFill : AppTheme.inputFill.withValues(alpha: 0.5),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppTheme.radiusSmall),
           borderSide: const BorderSide(color: AppTheme.borderLight),

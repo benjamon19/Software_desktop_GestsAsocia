@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Usuario {
   String? id;
   String nombre;
@@ -32,9 +33,9 @@ class Usuario {
     String cuerpoFormateado = '';
     for (int i = cuerpo.length - 1; i >= 0; i--) {
       if ((cuerpo.length - i) % 3 == 1 && i != cuerpo.length - 1) {
-        cuerpoFormateado = '.' + cuerpoFormateado;
+        cuerpoFormateado = '.$cuerpoFormateado';
       }
-      cuerpoFormateado = cuerpo[i] + cuerpoFormateado;
+      cuerpoFormateado = '${cuerpo[i]}$cuerpoFormateado';
     }
     
     return '$cuerpoFormateado-$dv';

@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import '../bindings/auth_binding.dart';
+import '../bindings/dashboard_binding.dart';
 import '../pages/splash_screen.dart';
 import '../pages/login_page.dart';
 import '../pages/register_page.dart';
@@ -30,7 +31,7 @@ class AppRoutes {
     GetPage(
       name: dashboard,
       page: () => const DashboardPage(),
-      binding: AuthBinding(),
+      binding: DashboardBinding(), 
     ),
   ];
 }

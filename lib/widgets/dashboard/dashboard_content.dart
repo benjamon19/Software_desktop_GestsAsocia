@@ -89,8 +89,8 @@ class DashboardContent extends StatelessWidget {
                 boxShadow: [
                   BoxShadow(
                     color: Theme.of(context).brightness == Brightness.dark 
-                        ? Colors.black.withOpacity(0.3)
-                        : Colors.grey.withOpacity(0.08),
+                        ? Colors.black.withValues(alpha: 0.3)
+                        : Colors.grey.withValues(alpha: 0.08),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   ),
@@ -112,7 +112,6 @@ class DashboardContent extends StatelessWidget {
                       ),
                       TextButton(
                         onPressed: () {
-                          // TODO: Navigate to full activity
                         },
                         child: Text(
                           'Ver todo',
@@ -172,8 +171,8 @@ class DashboardContent extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: Theme.of(context).brightness == Brightness.dark 
-                ? Colors.black.withOpacity(0.3)
-                : Colors.grey.withOpacity(0.08),
+                ? Colors.black.withValues(alpha: 0.3)
+                : Colors.grey.withValues(alpha: 0.08),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -186,7 +185,7 @@ class DashboardContent extends StatelessWidget {
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
               color: Theme.of(context).brightness == Brightness.dark 
-                  ? iconColor.withOpacity(0.2)
+                  ? iconColor.withValues(alpha: 0.2)
                   : bgColor,
               borderRadius: BorderRadius.circular(10),
             ),
