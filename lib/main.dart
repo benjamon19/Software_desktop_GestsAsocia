@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'config/firebase_config.dart';
+import 'config/window_config.dart';
 import 'controllers/auth_controller.dart';
 import 'controllers/theme_controller.dart';
 import 'utils/app_routes.dart';
@@ -9,6 +10,9 @@ import 'utils/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Configurar ventana de escritorio
+  await WindowConfig.initialize();
   
   // Inicializar Firebase
   await Firebase.initializeApp(
