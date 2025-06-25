@@ -11,7 +11,7 @@ import 'utils/app_theme.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // Configurar ventana de escritorio
+  // Configurar ventana
   await WindowConfig.initialize();
   
   // Inicializar Firebase

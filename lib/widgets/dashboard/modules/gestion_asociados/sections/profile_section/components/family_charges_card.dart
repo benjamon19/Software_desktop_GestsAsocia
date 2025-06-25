@@ -34,7 +34,7 @@ class _FamilyChargesCardState extends State<FamilyChargesCard> {
           _buildSectionHeader(context, cargas.length),
           const SizedBox(height: 16),
           _buildChargesContent(context, cargas),
-          if (cargas.length > 3) _buildScrollHint(context),
+          if (cargas.length > 5) _buildScrollHint(context),
         ],
       ),
     );
@@ -69,7 +69,7 @@ class _FamilyChargesCardState extends State<FamilyChargesCard> {
                 ),
               ),
             ),
-            if (chargesCount > 3)
+            if (chargesCount > 5)
               Padding(
                 padding: const EdgeInsets.only(left: 8),
                 child: Icon(
@@ -91,7 +91,7 @@ class _FamilyChargesCardState extends State<FamilyChargesCard> {
     
     return ConstrainedBox(
       constraints: BoxConstraints(
-        maxHeight: cargas.length > 3 ? 250 : double.infinity,
+        maxHeight: cargas.length > 5 ? 400 : double.infinity,
       ),
       child: Container(
         decoration: BoxDecoration(
@@ -102,11 +102,11 @@ class _FamilyChargesCardState extends State<FamilyChargesCard> {
         ),
         child: Scrollbar(
           controller: _scrollController,
-          thumbVisibility: cargas.length > 3,
+          thumbVisibility: cargas.length > 5,
           child: ListView.separated(
             controller: _scrollController,
             shrinkWrap: true,
-            physics: cargas.length > 3 
+            physics: cargas.length > 5 
                 ? const AlwaysScrollableScrollPhysics() 
                 : const NeverScrollableScrollPhysics(),
             padding: const EdgeInsets.all(8),
@@ -218,7 +218,7 @@ class _FamilyChargesCardState extends State<FamilyChargesCard> {
       padding: const EdgeInsets.only(top: 8),
       child: Center(
         child: Text(
-          'Desliza para ver más cargas familiares',
+          'Scrollea para ver más cargas familiares',
           style: TextStyle(
             fontSize: 12,
             color: AppTheme.getTextSecondary(context),
