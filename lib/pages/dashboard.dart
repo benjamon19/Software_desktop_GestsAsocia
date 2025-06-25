@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/auth_controller.dart';
-import '../controllers/theme_controller.dart'; 
+import '../controllers/theme_controller.dart';
 import '../widgets/dashboard/sidebar_menu.dart';
 import '../widgets/dashboard/top_bar.dart';
 import '../widgets/dashboard/dashboard_content.dart';
-import '../widgets/dashboard/page_content.dart';
+// NUEVA IMPORTACIÓN - Módulo de Asociados
+import '../widgets/dashboard/modules/gestion_asociados/asociados_main_view.dart';
 import '../utils/dashboard_data.dart';
-import '../utils/app_theme.dart'; 
+import '../utils/app_theme.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -18,14 +19,14 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   final AuthController authController = Get.find<AuthController>();
-  final ThemeController themeController = Get.find<ThemeController>(); 
+  final ThemeController themeController = Get.find<ThemeController>();
   bool isDrawerOpen = true;
   int selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.getBackgroundColor(context), 
+      backgroundColor: AppTheme.getBackgroundColor(context),
       body: Row(
         children: [
           // Sidebar Menu
@@ -62,39 +63,99 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _buildPageContent() {
     switch (selectedIndex) {
       case 0:
-        return const DashboardContent();
+        return const DashboardContent(); // Vista home (sin cambios)
       case 1:
-        return PageContent(
-          title: 'Gestión de Asociados',
-          icon: Icons.people_outline,
-          onBackToDashboard: () => setState(() => selectedIndex = 0),
-        );
+        return const AsociadosMainView(); // NUEVA VISTA DE ASOCIADOS
       case 2:
-        return PageContent(
+        return _buildPlaceholderView(
           title: 'Cargas Familiares',
           icon: Icons.family_restroom_outlined,
-          onBackToDashboard: () => setState(() => selectedIndex = 0),
+          description: 'Gestión de cargas familiares\n(Próximamente)',
         );
       case 3:
-        return PageContent(
+        return _buildPlaceholderView(
           title: 'Historial Clínico',
           icon: Icons.medical_information_outlined,
-          onBackToDashboard: () => setState(() => selectedIndex = 0),
+          description: 'Historial médico de asociados\n(Próximamente)',
         );
       case 4:
-        return PageContent(
+        return _buildPlaceholderView(
           title: 'Reserva de Horas',
           icon: Icons.schedule_outlined,
-          onBackToDashboard: () => setState(() => selectedIndex = 0),
+          description: 'Sistema de reservas médicas\n(Próximamente)',
         );
       case 5:
-        return PageContent(
+        return _buildPlaceholderView(
           title: 'Configuración',
           icon: Icons.settings_outlined,
-          onBackToDashboard: () => setState(() => selectedIndex = 0),
+          description: 'Configuración del sistema\n(Próximamente)',
         );
       default:
         return const DashboardContent();
     }
+  }
+
+  // Widget temporal para las secciones que aún no están implementadas
+  Widget _buildPlaceholderView({
+    required String title,
+    required IconData icon,
+    required String description,
+  }) {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(40),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(30),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                icon,
+                size: 80,
+                color: AppTheme.primaryColor,
+              ),
+            ),
+            const SizedBox(height: 30),
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.bold,
+                color: AppTheme.getTextPrimary(context),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              description,
+              style: TextStyle(
+                fontSize: 16,
+                color: AppTheme.getTextSecondary(context),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 30),
+            ElevatedButton(
+              onPressed: () => setState(() => selectedIndex = 0),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Volver al Dashboard',
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
