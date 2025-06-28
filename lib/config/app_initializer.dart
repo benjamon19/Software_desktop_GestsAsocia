@@ -22,10 +22,6 @@ class AppInitializer {
 
     try {
       if (kDebugMode) {
-        print('Aplicación desktop iniciada con configuración optimizada');
-      }
-    } catch (e) {
-      if (kDebugMode) {
         print('Error configurando desktop: $e');
       }
     }
@@ -125,10 +121,7 @@ class AppInitializer {
     if (kIsWeb) return false;
     
     try {
-      return !kIsWeb && (
         defaultTargetPlatform == TargetPlatform.windows ||
-        defaultTargetPlatform == TargetPlatform.linux ||
-        defaultTargetPlatform == TargetPlatform.macOS
       );
     } catch (e) {
       return false;

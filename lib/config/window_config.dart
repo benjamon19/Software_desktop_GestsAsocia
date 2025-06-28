@@ -1,6 +1,6 @@
+// lib/config/window_config.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:window_manager/window_manager.dart';
 
 class WindowConfig {
   // Configuración de tamaños
@@ -33,10 +33,10 @@ class WindowConfig {
     }
   }
 
+
   /// Configurar ventana usando window_manager
   static Future<void> _configureWindow() async {
     try {
-      // Asegurar que window manager esté inicializado
       await windowManager.ensureInitialized();
 
       // Configurar opciones de ventana
@@ -67,6 +67,6 @@ class WindowConfig {
         print('Error en configuración de window manager: $e');
       }
       // No relanzar el error para evitar crash de la app
-    }
-  }
-}
+  /// Configurar ventana usando window_manager (solo desktop)
+  static Future<void> _configureWindow() async {
+    try {
