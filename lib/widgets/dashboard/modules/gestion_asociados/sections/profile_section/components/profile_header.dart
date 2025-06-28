@@ -98,19 +98,15 @@ class ProfileHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       decoration: BoxDecoration(
-        color: _getStatusColor(asociado['estado']).withValues(alpha: 0.2),
+        color: _getStatusColor(asociado['estado']), // Fondo sólido con el color del estado
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: _getStatusColor(asociado['estado']),
-          width: 1,
-        ),
       ),
       child: Text(
         asociado['estado'],
-        style: TextStyle(
+        style: const TextStyle( // Texto blanco para buen contraste
           fontSize: 12,
           fontWeight: FontWeight.w600,
-          color: _getStatusColor(asociado['estado']),
+          color: Colors.white,
         ),
       ),
     );
