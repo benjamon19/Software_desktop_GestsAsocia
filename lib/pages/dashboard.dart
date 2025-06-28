@@ -5,8 +5,10 @@ import '../controllers/theme_controller.dart';
 import '../widgets/dashboard/sidebar_menu.dart';
 import '../widgets/dashboard/top_bar.dart';
 import '../widgets/dashboard/dashboard_content.dart';
-// NUEVA IMPORTACIÓN - Módulo de Asociados
+// IMPORTACIÓN - Módulo de Asociados
 import '../widgets/dashboard/modules/gestion_asociados/asociados_main_view.dart';
+// IMPORTACIÓN - Módulo de Cargas Familiares
+import '../widgets/dashboard/modules/gestion_cargas_familiares/cargas_familiares_main_view.dart';
 import '../utils/dashboard_data.dart';
 import '../utils/app_theme.dart';
 
@@ -63,15 +65,11 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _buildPageContent() {
     switch (selectedIndex) {
       case 0:
-        return const DashboardContent(); // Vista home (sin cambios)
+        return const DashboardContent(); // Vista home
       case 1:
-        return const AsociadosMainView(); // NUEVA VISTA DE ASOCIADOS
+        return const AsociadosMainView(); // Vista de Asociados
       case 2:
-        return _buildPlaceholderView(
-          title: 'Cargas Familiares',
-          icon: Icons.family_restroom_outlined,
-          description: 'Gestión de cargas familiares\n(Próximamente)',
-        );
+        return const CargasFamiliaresMainView(); // Vista de Cargas Familiares
       case 3:
         return _buildPlaceholderView(
           title: 'Historial Clínico',
