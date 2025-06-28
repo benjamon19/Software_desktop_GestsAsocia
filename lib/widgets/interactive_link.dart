@@ -32,7 +32,7 @@ class _InteractiveLinkState extends State<InteractiveLink> {
           child: Text(
             widget.text,
             style: TextStyle(
-              color: isHovered ? const Color.fromARGB(255, 45, 99, 143) : AppTheme.primaryColor.withOpacity(0.8),
+              color: isHovered ? const Color.fromARGB(255, 45, 99, 143) : AppTheme.primaryColor.withValues(alpha: 0.8),
               fontSize: 14,
               fontWeight: FontWeight.w500,
             ),

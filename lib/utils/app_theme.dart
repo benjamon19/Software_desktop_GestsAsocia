@@ -1,56 +1,45 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Colores principales
   static const Color primaryColor = Color(0xFF4299E1);
   static const Color secondaryColor = Color(0xFF2D3748);
   
-  // Colores modo claro (tu estructura original)
-  static const Color backgroundColor = Color(0xFFF5F6FA);
-  static const Color surfaceColor = Colors.white;
+  static const Color backgroundColor = Color(0xFFF4F5F7);
+  static const Color surfaceColor = Color(0xFFFAFAFB);
   
-  // Colores de texto modo claro
-  static const Color textPrimary = Color(0xFF1A202C);
+  static const Color textPrimary = Color(0xFF2D3748);
   static const Color textSecondary = Color(0xFF4A5568);
   static const Color textTertiary = Color(0xFF718096);
-  static const Color textLight = Color(0xFFA0AEC0);
+  static const Color textLight = Color(0xFF9CA3AF);
   
-  // Colores de borde e input modo claro
   static const Color borderLight = Color(0xFFE2E8F0);
-  static const Color inputFill = Color(0xFFF7FAFC);
-  static const Color inputBackground = Color(0xFFF7FAFC);
-  static const Color inputBackgroundFocused = Color(0xFFEDF2F7);
+  static const Color inputFill = Color(0xFFF7F8FA);
+  static const Color inputBackground = Color(0xFFF7F8FA);
+  static const Color inputBackgroundFocused = Color(0xFFF0F2F5);
   
-  // Colores modo oscuro (más claros y cómodos)
-  static const Color darkBackgroundColor = Color(0xFF1A1A1A); // Gris oscuro pero no tanto
-  static const Color darkSurfaceColor = Color(0xFF2D2D2D);    // Gris medio para el panel
+  static const Color darkBackgroundColor = Color(0xFF36393F);
+  static const Color darkSurfaceColor = Color(0xFF2F3136);
   
-  // Colores de texto modo oscuro (más claros y legibles)
-  static const Color darkTextPrimary = Color(0xFFFFFFFF);    // Blanco puro para títulos
-  static const Color darkTextSecondary = Color(0xFFE0E0E0);  // Gris muy claro (más legible)
-  static const Color darkTextTertiary = Color(0xFFBDBDBD);   // Gris claro
-  static const Color darkTextLight = Color(0xFF9E9E9E);      // Gris medio
+  static const Color darkTextPrimary = Color(0xFFFFFFFF);
+  static const Color darkTextSecondary = Color(0xFFE2E4E9);
+  static const Color darkTextTertiary = Color(0xFFC1C7D0);
+  static const Color darkTextLight = Color(0xFF9CA3AF);
   
-  // Colores de borde e input modo oscuro (más equilibrados)
-  static const Color darkBorderLight = Color(0xFF404040);     // Gris medio más visible
-  static const Color darkInputFill = Color(0xFF363636);       // Gris para inputs más claro
-  static const Color darkInputBackground = Color(0xFF363636);
-  static const Color darkInputBackgroundFocused = Color(0xFF404040);
+  static const Color darkBorderLight = Color(0xFF40444B);
+  static const Color darkInputFill = Color(0xFF40444B);
+  static const Color darkInputBackground = Color(0xFF40444B);
+  static const Color darkInputBackgroundFocused = Color(0xFF343A47);
   
-  // Colores de estado (iguales para ambos modos)
   static const Color errorColor = Color(0xFFE53E3E);
   static const Color successColor = Color(0xFF38A169);
   static const Color warningColor = Color(0xFFD69E2E);
   
-  // Etiquetas y captions modo claro
   static const Color labelMedium = Color(0xFF4A5568);
-  static const Color caption = Color(0xFF718096);
+  static const Color caption = Color(0xFF6B7280);
   
-  // Etiquetas y captions modo oscuro (más claros)
-  static const Color darkLabelMedium = Color(0xFFE0E0E0);    // Más claro para mejor legibilidad
-  static const Color darkCaption = Color(0xFFBDBDBD);       // Gris claro para captions
+  static const Color darkLabelMedium = Color(0xFFE2E4E9);
+  static const Color darkCaption = Color(0xFFC1C7D0);
   
-  // Espaciados
   static const double spaceXS = 4.0;
   static const double spaceS = 8.0;
   static const double spaceM = 16.0;
@@ -58,12 +47,10 @@ class AppTheme {
   static const double spaceXL = 32.0;
   static const double spaceXXL = 48.0;
   
-  // Radios
   static const double radiusSmall = 8.0;
   static const double radiusMedium = 12.0;
   static const double radiusLarge = 16.0;
   
-  // Tamaños de fuente
   static const double fontSizeXS = 10.0;
   static const double fontSizeS = 12.0;
   static const double fontSizeM = 14.0;
@@ -72,7 +59,6 @@ class AppTheme {
   static const double fontSizeXXL = 24.0;
   static const double fontSizeXXXL = 32.0;
   
-  // Getters dinámicos que detectan el tema actual
   static Color getBackgroundColor(BuildContext context) {
     return Theme.of(context).brightness == Brightness.dark
         ? darkBackgroundColor
@@ -115,7 +101,6 @@ class AppTheme {
         : labelMedium;
   }
   
-  // Estilos de texto estáticos (tu código original)
   static const TextStyle headingLarge = TextStyle(
     fontSize: fontSizeXXXL,
     fontWeight: FontWeight.bold,
@@ -170,7 +155,6 @@ class AppTheme {
     color: caption,
   );
   
-  // Estilos de texto adaptativos (nuevos)
   static TextStyle getHeadingLarge(BuildContext context) => TextStyle(
     fontSize: fontSizeXXXL,
     fontWeight: FontWeight.bold,
@@ -219,7 +203,6 @@ class AppTheme {
     color: Theme.of(context).brightness == Brightness.dark ? darkCaption : caption,
   );
   
-  // Sombras
   static const BoxShadow shadowLight = BoxShadow(
     color: Color(0x0F000000),
     blurRadius: 8,
@@ -232,7 +215,6 @@ class AppTheme {
     offset: Offset(0, 4),
   );
 
-  // Tema claro
   static ThemeData lightTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.light,
@@ -252,11 +234,9 @@ class AppTheme {
       primary: primaryColor,
       secondary: secondaryColor,
       surface: surfaceColor,
-      background: backgroundColor,
       onPrimary: Colors.white,
       onSecondary: Colors.white,
       onSurface: textPrimary,
-      onBackground: textPrimary,
     ),
     scaffoldBackgroundColor: backgroundColor,
     appBarTheme: const AppBarTheme(
@@ -287,7 +267,6 @@ class AppTheme {
     ),
   );
 
-  // Tema oscuro
   static ThemeData darkTheme = ThemeData(
     useMaterial3: true,
     brightness: Brightness.dark,
@@ -305,13 +284,11 @@ class AppTheme {
     }),
     colorScheme: const ColorScheme.dark(
       primary: primaryColor,
-      secondary: Color(0xFF404040),          // Gris más claro y visible
+      secondary: Color(0xFF404040),
       surface: darkSurfaceColor,
-      background: darkBackgroundColor,
       onPrimary: Colors.white,
       onSecondary: Colors.white,
       onSurface: darkTextPrimary,
-      onBackground: darkTextPrimary,
     ),
     scaffoldBackgroundColor: darkBackgroundColor,
     appBarTheme: const AppBarTheme(
@@ -331,7 +308,7 @@ class AppTheme {
         borderSide: const BorderSide(color: primaryColor, width: 2),
       ),
       labelStyle: const TextStyle(color: darkTextSecondary),
-      hintStyle: TextStyle(color: darkTextSecondary.withOpacity(0.7)),
+      hintStyle: TextStyle(color: darkTextSecondary.withValues(alpha: 0.7)),
     ),
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(

@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/usuario.dart';
 import '../services/firebase_service.dart';
 
@@ -12,46 +13,76 @@ class AuthController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    print('=== INICIALIZANDO AUTH CONTROLLER ===');
+    Get.log('=== INICIALIZANDO AUTH CONTROLLER ===');
     
-    // Escuchar cambios en el estado de autenticación
-    firebaseUser.bindStream(FirebaseService.authStateChanges);
-    
-    // Cuando el usuario de Firebase cambia, cargar sus datos
-    ever(firebaseUser, _handleAuthChanged);
+    // NO escuchar cambios automáticos de Firebase Auth
+    // Solo verificar sesión persistente al inicio
+    _checkPersistentSession();
   }
 
-  // Manejar cambios de autenticación
-  void _handleAuthChanged(User? user) async {
-    print('=== CAMBIO DE ESTADO AUTH ===');
-    print('Usuario: ${user?.email ?? "null"}');
-
-    if (user != null) {
-      // Usuario logueado - cargar sus datos
-      await _loadUserData(user.uid);
-
-      // Navegar al dashboard si los datos se cargan correctamente
-      if (currentUser.value != null) {
-        print('=== NAVEGANDO A DASHBOARD ===');
-        Get.offAllNamed('/dashboard');
+  // Verificar si hay una sesión guardada
+  Future<void> _checkPersistentSession() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedEmail = prefs.getString('user_email');
+      final savedPassword = prefs.getString('user_password');
+      
+      if (savedEmail != null && savedPassword != null) {
+        Get.log('=== SESIÓN PERSISTENTE ENCONTRADA - AUTO LOGIN ===');
+        isLoading.value = true;
+        
+        try {
+          // Auto-login con credenciales guardadas
+          await FirebaseService.signInWithEmailAndPassword(
+            email: savedEmail,
+            password: savedPassword,
+          );
+          
+          // Cargar datos del usuario
+          final user = FirebaseAuth.instance.currentUser;
+          if (user != null) {
+            await _loadUserData(user.uid);
+            
+            if (currentUser.value != null) {
+              firebaseUser.value = user;
+              Get.log('=== NAVEGANDO A DASHBOARD (AUTO LOGIN) ===');
+              Get.offAllNamed('/dashboard');
+            }
+          }
+        } catch (e) {
+          Get.log('Error en auto-login: $e');
+          // Limpiar credenciales corruptas
+          await _clearPersistentSession();
+        } finally {
+          isLoading.value = false;
+        }
+      } else {
+        Get.log('=== NO HAY SESIÓN PERSISTENTE - VERIFICAR USUARIO ACTUAL ===');
+        // Si no hay sesión persistente pero hay usuario en Firebase, cerrarlo
+        final currentFirebaseUser = FirebaseAuth.instance.currentUser;
+        if (currentFirebaseUser != null) {
+          Get.log('=== CERRANDO SESIÓN DE FIREBASE (NO PERSISTENTE) ===');
+          await FirebaseService.signOut();
+        }
       }
-    } else {
-      // Usuario deslogueado - limpiar datos
-      currentUser.value = null;
-      print('=== USUARIO DESLOGUEADO ===');
+    } catch (e) {
+      Get.log('Error verificando sesión persistente: $e');
+      // Limpiar datos corruptos y cerrar cualquier sesión
+      await _clearPersistentSession();
+      await FirebaseService.signOut();
     }
   }
 
   // Cargar datos del usuario
   Future<void> _loadUserData(String uid) async {
     try {
-      print('=== CARGANDO DATOS DEL USUARIO ===');
+      Get.log('=== CARGANDO DATOS DEL USUARIO ===');
       Usuario? usuario = await FirebaseService.getUser(uid);
       currentUser.value = usuario;
-      print('=== DATOS CARGADOS: ${usuario?.nombreCompleto} ===');
+      Get.log('=== DATOS CARGADOS: ${usuario?.nombreCompleto} ===');
     } catch (e) {
-      print('=== ERROR CARGANDO DATOS ===');
-      print('Error: $e');
+      Get.log('=== ERROR CARGANDO DATOS ===');
+      Get.log('Error: $e');
       _showErrorSnackbar("Error", "No se pudieron cargar los datos del usuario");
     }
   }
@@ -66,7 +97,7 @@ class AuthController extends GetxController {
     required String rut,
   }) async {
     try {
-      print('=== INICIANDO PROCESO DE REGISTRO ===');
+      Get.log('=== INICIANDO PROCESO DE REGISTRO ===');
       isLoading.value = true;
 
       // Validar RUT
@@ -76,14 +107,14 @@ class AuthController extends GetxController {
       }
 
       // Paso 1: Crear usuario principal con email
-      print('=== PASO 1: CREANDO AUTH CON EMAIL ===');
+      Get.log('=== PASO 1: CREANDO AUTH CON EMAIL ===');
       UserCredential result = await FirebaseService.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
       // Paso 2: Crear objeto Usuario
-      print('=== PASO 2: CREANDO OBJETO USUARIO ===');
+      Get.log('=== PASO 2: CREANDO OBJETO USUARIO ===');
       Usuario nuevoUsuario = Usuario(
         nombre: nombre,
         apellido: apellido,
@@ -94,29 +125,29 @@ class AuthController extends GetxController {
       );
 
       // Paso 3: Guardar en Firestore
-      print('=== PASO 3: GUARDANDO EN FIRESTORE ===');
+      Get.log('=== PASO 3: GUARDANDO EN FIRESTORE ===');
       await FirebaseService.saveUser(result.user!.uid, nuevoUsuario);
 
       // Paso 4: Crear entrada adicional para login con RUT
-      print('=== PASO 4: CREANDO ENTRADA PARA LOGIN CON RUT ===');
+      Get.log('=== PASO 4: CREANDO ENTRADA PARA LOGIN CON RUT ===');
       try {
         await FirebaseService.createUserWithEmailAndPassword(
-          email: '${rut}@rut.local',
+          email: '$rut@rut.local',
           password: password,
         );
-        print('Usuario RUT creado: ${rut}@rut.local');
+        Get.log('Usuario RUT creado: $rut@rut.local');
       } catch (e) {
-        print('No se pudo crear usuario RUT (puede que ya exista): $e');
+        Get.log('No se pudo crear usuario RUT (puede que ya exista): $e');
         // No es crítico si falla
       }
 
-      print('=== REGISTRO COMPLETADO EXITOSAMENTE ===');
+      Get.log('=== REGISTRO COMPLETADO EXITOSAMENTE ===');
       _showSuccessSnackbar("¡Éxito!", "Usuario registrado correctamente");
       return true;
 
     } catch (e) {
-      print('=== ERROR EN REGISTRO COMPLETO ===');
-      print('Error: $e');
+      Get.log('=== ERROR EN REGISTRO COMPLETO ===');
+      Get.log('Error: $e');
       
       String errorMessage = _extractErrorMessage(e);
       _showErrorSnackbar("Error de Registro", errorMessage);
@@ -126,10 +157,10 @@ class AuthController extends GetxController {
     }
   }
 
-  // Login de usuario - SIMPLE CON BÚSQUEDA EN FIRESTORE
-  Future<bool> login(String input, String password) async {
+  // Login de usuario - MODIFICADO PARA MANEJAR "RECORDARME"
+  Future<bool> login(String input, String password, {bool rememberMe = false}) async {
     try {
-      print('LOGIN - Input: "$input"');
+      Get.log('LOGIN - Input: "$input", Remember: $rememberMe');
       isLoading.value = true;
 
       if (input.trim().isEmpty || password.isEmpty) {
@@ -141,7 +172,7 @@ class AuthController extends GetxController {
 
       // Si NO tiene @ (es RUT), buscar el email en Firestore
       if (!input.contains('@')) {
-        print('Es RUT, buscando email en Firestore...');
+        Get.log('Es RUT, buscando email en Firestore...');
         
         final usuarios = await FirebaseService.getCollection('usuarios');
         
@@ -149,7 +180,7 @@ class AuthController extends GetxController {
           final userData = doc.data() as Map<String, dynamic>;
           if (userData['rut'] == input) {
             emailParaLogin = userData['email'];
-            print('Email encontrado: $emailParaLogin');
+            Get.log('Email encontrado: $emailParaLogin');
             break;
           }
         }
@@ -160,18 +191,38 @@ class AuthController extends GetxController {
         }
       }
 
-      print('Haciendo login con email: $emailParaLogin');
+      Get.log('Haciendo login con email: $emailParaLogin');
 
       await FirebaseService.signInWithEmailAndPassword(
         email: emailParaLogin,
         password: password,
       );
 
+      // Cargar datos del usuario
+      final user = FirebaseAuth.instance.currentUser;
+      if (user != null) {
+        await _loadUserData(user.uid);
+        firebaseUser.value = user;
+        
+        // SOLO guardar credenciales si marcó "Recordarme"
+        if (rememberMe) {
+          await _savePersistentSession(emailParaLogin, password);
+          Get.log('=== SESIÓN GUARDADA PARA RECORDAR ===');
+        } else {
+          // Asegurar que no hay sesión persistente guardada
+          await _clearPersistentSession();
+          Get.log('=== SESIÓN TEMPORAL (NO RECORDAR) ===');
+        }
+
+        // Navegar al dashboard
+        Get.offAllNamed('/dashboard');
+      }
+
       _showSuccessSnackbar("¡Éxito!", "Sesión iniciada correctamente");
       return true;
 
     } catch (e) {
-      print('ERROR LOGIN: $e');
+      Get.log('ERROR LOGIN: $e');
       String errorMessage = _extractErrorMessage(e);
       _showErrorSnackbar("Error de Login", errorMessage);
       return false;
@@ -183,12 +234,41 @@ class AuthController extends GetxController {
   // Cerrar sesión
   Future<void> logout() async {
     try {
+      // SIEMPRE limpiar la sesión persistente al cerrar sesión
+      await _clearPersistentSession();
+      
+      // Limpiar variables locales
+      firebaseUser.value = null;
+      currentUser.value = null;
+      
       await FirebaseService.signOut();
       _showSuccessSnackbar("Sesión cerrada", "Has cerrado sesión correctamente");
       Get.offAllNamed('/login');
     } catch (e) {
       String errorMessage = _extractErrorMessage(e);
       _showErrorSnackbar("Error", "Error al cerrar sesión: $errorMessage");
+    }
+  }
+
+  // Guardar sesión persistente
+  Future<void> _savePersistentSession(String email, String password) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_email', email);
+      await prefs.setString('user_password', password);
+    } catch (e) {
+      Get.log('Error guardando sesión persistente: $e');
+    }
+  }
+
+  // Limpiar sesión persistente
+  Future<void> _clearPersistentSession() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('user_email');
+      await prefs.remove('user_password');
+    } catch (e) {
+      Get.log('Error limpiando sesión persistente: $e');
     }
   }
 

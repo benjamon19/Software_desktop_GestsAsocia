@@ -1,9 +1,10 @@
 import 'package:get/get.dart';
 import '../bindings/auth_binding.dart';
+import '../bindings/dashboard_binding.dart';
 import '../pages/splash_screen.dart';
 import '../pages/login_page.dart';
 import '../pages/register_page.dart';
-import '../pages/dashboard_page.dart';
+import '../pages/dashboard.dart';
 
 class AppRoutes {
   static const String splash = '/';
@@ -15,7 +16,6 @@ class AppRoutes {
     GetPage(
       name: splash,
       page: () => const SplashScreen(),
-      // Sin binding aquí ya que ThemeController se inicializa en main
     ),
     GetPage(
       name: login,
@@ -30,7 +30,7 @@ class AppRoutes {
     GetPage(
       name: dashboard,
       page: () => const DashboardPage(),
-      binding: AuthBinding(),
+      binding: DashboardBinding(), 
     ),
   ];
 }

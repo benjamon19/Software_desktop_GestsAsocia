@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:get/get.dart';
 import '../models/usuario.dart';
 
 class FirebaseService {
@@ -24,22 +25,22 @@ class FirebaseService {
     required String password,
   }) async {
     try {
-      print('=== INICIANDO REGISTRO ===');
-      print('Email: $email');
-      print('Password length: ${password.length}');
+      Get.log('=== INICIANDO REGISTRO ===');
+      Get.log('Email: $email');
+      Get.log('Password length: ${password.length}');
       
       UserCredential result = await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
       
-      print('=== REGISTRO AUTH EXITOSO ===');
-      print('UID: ${result.user?.uid}');
+      Get.log('=== REGISTRO AUTH EXITOSO ===');
+      Get.log('UID: ${result.user?.uid}');
       
       return result;
     } catch (e) {
-      print('=== ERROR EN REGISTRO AUTH ===');
-      print('Error: $e');
+      Get.log('=== ERROR EN REGISTRO AUTH ===');
+      Get.log('Error: $e');
       throw _handleAuthException(e);
     }
   }
@@ -50,21 +51,21 @@ class FirebaseService {
     required String password,
   }) async {
     try {
-      print('=== INICIANDO LOGIN ===');
-      print('Email: $email');
+      Get.log('=== INICIANDO LOGIN ===');
+      Get.log('Email: $email');
       
       UserCredential result = await _auth.signInWithEmailAndPassword(
         email: email,
         password: password,
       );
       
-      print('=== LOGIN EXITOSO ===');
-      print('UID: ${result.user?.uid}');
+      Get.log('=== LOGIN EXITOSO ===');
+      Get.log('UID: ${result.user?.uid}');
       
       return result;
     } catch (e) {
-      print('=== ERROR EN LOGIN ===');
-      print('Error: $e');
+      Get.log('=== ERROR EN LOGIN ===');
+      Get.log('Error: $e');
       throw _handleAuthException(e);
     }
   }
@@ -73,10 +74,10 @@ class FirebaseService {
   static Future<void> signOut() async {
     try {
       await _auth.signOut();
-      print('=== LOGOUT EXITOSO ===');
+      Get.log('=== LOGOUT EXITOSO ===');
     } catch (e) {
-      print('=== ERROR EN LOGOUT ===');
-      print('Error: $e');
+      Get.log('=== ERROR EN LOGOUT ===');
+      Get.log('Error: $e');
       throw Exception('Error cerrando sesión: ${e.toString()}');
     }
   }
@@ -86,19 +87,19 @@ class FirebaseService {
   /// Guardar datos del usuario en Firestore
   static Future<void> saveUser(String uid, Usuario usuario) async {
     try {
-      print('=== GUARDANDO USUARIO EN FIRESTORE ===');
-      print('UID: $uid');
-      print('Datos: ${usuario.toMap()}');
+      Get.log('=== GUARDANDO USUARIO EN FIRESTORE ===');
+      Get.log('UID: $uid');
+      Get.log('Datos: ${usuario.toMap()}');
       
       await _firestore
           .collection('usuarios')
           .doc(uid)
           .set(usuario.toMap());
           
-      print('=== USUARIO GUARDADO EXITOSAMENTE ===');
+      Get.log('=== USUARIO GUARDADO EXITOSAMENTE ===');
     } catch (e) {
-      print('=== ERROR GUARDANDO USUARIO ===');
-      print('Error: $e');
+      Get.log('=== ERROR GUARDANDO USUARIO ===');
+      Get.log('Error: $e');
       throw Exception('Error guardando usuario: ${e.toString()}');
     }
   }
@@ -106,8 +107,8 @@ class FirebaseService {
   /// Obtener datos del usuario desde Firestore
   static Future<Usuario?> getUser(String uid) async {
     try {
-      print('=== OBTENIENDO USUARIO DE FIRESTORE ===');
-      print('UID: $uid');
+      Get.log('=== OBTENIENDO USUARIO DE FIRESTORE ===');
+      Get.log('UID: $uid');
       
       DocumentSnapshot doc = await _firestore
           .collection('usuarios')
@@ -115,17 +116,17 @@ class FirebaseService {
           .get();
           
       if (doc.exists) {
-        print('=== USUARIO ENCONTRADO ===');
+        Get.log('=== USUARIO ENCONTRADO ===');
         Usuario usuario = Usuario.fromMap(doc.data() as Map<String, dynamic>, doc.id);
-        print('Usuario: ${usuario.nombreCompleto}');
+        Get.log('Usuario: ${usuario.nombreCompleto}');
         return usuario;
       } else {
-        print('=== USUARIO NO ENCONTRADO ===');
+        Get.log('=== USUARIO NO ENCONTRADO ===');
         return null;
       }
     } catch (e) {
-      print('=== ERROR OBTENIENDO USUARIO ===');
-      print('Error: $e');
+      Get.log('=== ERROR OBTENIENDO USUARIO ===');
+      Get.log('Error: $e');
       throw Exception('Error obteniendo usuario: ${e.toString()}');
     }
   }
@@ -133,19 +134,19 @@ class FirebaseService {
   /// Actualizar datos del usuario
   static Future<void> updateUser(String uid, Map<String, dynamic> data) async {
     try {
-      print('=== ACTUALIZANDO USUARIO ===');
-      print('UID: $uid');
-      print('Datos: $data');
+      Get.log('=== ACTUALIZANDO USUARIO ===');
+      Get.log('UID: $uid');
+      Get.log('Datos: $data');
       
       await _firestore
           .collection('usuarios')
           .doc(uid)
           .update(data);
           
-      print('=== USUARIO ACTUALIZADO ===');
+      Get.log('=== USUARIO ACTUALIZADO ===');
     } catch (e) {
-      print('=== ERROR ACTUALIZANDO USUARIO ===');
-      print('Error: $e');
+      Get.log('=== ERROR ACTUALIZANDO USUARIO ===');
+      Get.log('Error: $e');
       throw Exception('Error actualizando usuario: ${e.toString()}');
     }
   }
@@ -206,14 +207,14 @@ class FirebaseService {
   
   /// Convertir errores de Firebase a mensajes amigables
   static Exception _handleAuthException(dynamic e) {
-    print('=== ERROR FIREBASE DETALLADO ===');
-    print('Tipo: ${e.runtimeType}');
+    Get.log('=== ERROR FIREBASE DETALLADO ===');
+    Get.log('Tipo: ${e.runtimeType}');
     
     String message = 'Error inesperado';
     
     if (e is FirebaseAuthException) {
-      print('Código: ${e.code}');
-      print('Mensaje: ${e.message}');
+      Get.log('Código: ${e.code}');
+      Get.log('Mensaje: ${e.message}');
       
       switch (e.code) {
         case 'user-not-found':
@@ -250,16 +251,16 @@ class FirebaseService {
           message = 'Error de autenticación: ${e.message ?? e.code}';
       }
     } else if (e is FirebaseException) {
-      print('Código Firebase: ${e.code}');
-      print('Mensaje Firebase: ${e.message}');
+      Get.log('Código Firebase: ${e.code}');
+      Get.log('Mensaje Firebase: ${e.message}');
       message = 'Error de Firebase: ${e.message ?? e.code}';
     } else {
-      print('Error genérico: ${e.toString()}');
+      Get.log('Error genérico: ${e.toString()}');
       message = 'Error inesperado: ${e.toString()}';
     }
     
-    print('Mensaje final: $message');
-    print('===============================');
+    Get.log('Mensaje final: $message');
+    Get.log('===============================');
     
     // Retornar Exception en lugar de String
     return Exception(message);

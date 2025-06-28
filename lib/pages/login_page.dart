@@ -172,8 +172,8 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    // El AuthController se encarga de todo (email o RUT)
-    bool success = await authController.login(emailOrRut, password);
+    // PASAR EL VALOR DE rememberMe al AuthController
+    bool success = await authController.login(emailOrRut, password, rememberMe: rememberMe);
 
     // Limpiar campos si fue exitoso
     if (success) {

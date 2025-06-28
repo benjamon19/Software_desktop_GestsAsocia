@@ -13,7 +13,7 @@ class AuthHelper {
         String? email = await findEmailByRUT(input);
         return email ?? '';
       } catch (e) {
-        print('Error buscando email por RUT: $e');
+        Get.log('Error buscando email por RUT: $e');
         return '';
       }
     }
@@ -34,7 +34,7 @@ class AuthHelper {
       
       return null;
     } catch (e) {
-      print('Error en consulta de RUT: $e');
+      Get.log('Error en consulta de RUT: $e');
       return null;
     }
   }
