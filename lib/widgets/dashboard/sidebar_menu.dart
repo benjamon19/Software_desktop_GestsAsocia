@@ -54,11 +54,11 @@ class SidebarMenu extends StatelessWidget {
           ),
           Divider(height: 1, color: AppTheme.getBorderLight(context)), 
                      
-          // Menu Items 
+          // Menu Items (sin configuración)
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(vertical: 10),
-              itemCount: DashboardData.menuItems.length - 1, 
+              itemCount: DashboardData.menuItems.length, // Ahora usa todos los items
               itemBuilder: (context, index) {
                 final item = DashboardData.menuItems[index];
                 final isSelected = selectedIndex == index;
@@ -98,38 +98,7 @@ class SidebarMenu extends StatelessWidget {
             ),
           ),
           
-          Divider(height: 1, color: AppTheme.getBorderLight(context)),
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: selectedIndex == 5 
-                   ? AppTheme.primaryColor.withValues(alpha: 0.1)
-                   : Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: ListTile(
-              leading: Icon(
-                Icons.settings_outlined,
-                color: selectedIndex == 5
-                     ? AppTheme.primaryColor
-                    : AppTheme.getTextSecondary(context),
-                size: 22,
-              ),
-              title: Text(
-                'Configuración',
-                style: TextStyle(
-                  color: selectedIndex == 5
-                       ? AppTheme.primaryColor
-                      : AppTheme.getTextPrimary(context),
-                  fontWeight: selectedIndex == 5
-                       ? FontWeight.w600
-                       : FontWeight.normal,
-                  fontSize: 15,
-                ),
-              ),
-              onTap: () => onItemSelected(5), 
-            ),
-          ),
+          // Sin configuración al final
         ],
       ),
     );

@@ -23,10 +23,6 @@ class DashboardData {
       'title': 'Reserva de Horas',
       'icon': Icons.schedule_outlined,
     },
-    {
-      'title': 'Configuración',
-      'icon': Icons.settings_outlined,
-    },
   ];
 
   // Nombres de meses

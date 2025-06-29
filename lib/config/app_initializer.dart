@@ -22,7 +22,6 @@ class AppInitializer {
     if (!_isDesktop) return;
 
     try {
-      // Solo importar y usar clases desktop si no es web
       if (kDebugMode) {
         print('Aplicación desktop iniciada con configuración optimizada');
       }
@@ -122,6 +121,7 @@ class AppInitializer {
       }
     }
   }
+  
   static bool get _isDesktop {
     if (kIsWeb) return false;
     
