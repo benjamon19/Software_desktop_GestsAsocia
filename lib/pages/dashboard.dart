@@ -5,8 +5,16 @@ import '../controllers/theme_controller.dart';
 import '../widgets/dashboard/sidebar_menu.dart';
 import '../widgets/dashboard/top_bar.dart';
 import '../widgets/dashboard/dashboard_content.dart';
-// NUEVA IMPORTACIÓN - Módulo de Asociados
+// IMPORTACIÓN - Módulo de Asociados
 import '../widgets/dashboard/modules/gestion_asociados/asociados_main_view.dart';
+// IMPORTACIÓN - Módulo de Cargas Familiares
+import '../widgets/dashboard/modules/gestion_cargas_familiares/cargas_familiares_main_view.dart';
+// IMPORTACIÓN - Módulo de Historial Clínico
+import '../widgets/dashboard/modules/gestion_historial_clinico/historial_clinico_main_view.dart';
+// IMPORTACIÓN - Configuración
+import '../widgets/dashboard/configuracion/configuracion_view.dart';
+// IMPORTACIÓN - Perfil (NUEVO)
+import '../widgets/dashboard/perfil/perfil_view.dart';
 import '../utils/dashboard_data.dart';
 import '../utils/app_theme.dart';
 
@@ -22,6 +30,28 @@ class _DashboardPageState extends State<DashboardPage> {
   final ThemeController themeController = Get.find<ThemeController>();
   bool isDrawerOpen = true;
   int selectedIndex = 0;
+
+  // NUEVO: Método para obtener el título de la página actual
+  String _getCurrentPageTitle() {
+    switch (selectedIndex) {
+      case 0:
+        return DashboardData.menuItems[0]['title'];
+      case 1:
+        return DashboardData.menuItems[1]['title'];
+      case 2:
+        return DashboardData.menuItems[2]['title'];
+      case 3:
+        return DashboardData.menuItems[3]['title'];
+      case 4:
+        return DashboardData.menuItems[4]['title'];
+      case 5:
+        return 'Configuración'; // Título personalizado para configuración
+      case 6: // NUEVO: Caso para perfil
+        return 'Mi Perfil'; // Título personalizado para perfil
+      default:
+        return DashboardData.menuItems[0]['title'];
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,14 +70,17 @@ class _DashboardPageState extends State<DashboardPage> {
           Expanded(
             child: Column(
               children: [
-                // Top Bar
+                // Top Bar - CAMBIO: usar el método personalizado
                 TopBar(
                   isDrawerOpen: isDrawerOpen,
-                  currentPageTitle: DashboardData.menuItems[selectedIndex]['title'],
+                  currentPageTitle: _getCurrentPageTitle(), // CAMBIO AQUÍ
                   onMenuToggle: () => setState(() => isDrawerOpen = !isDrawerOpen),
                   authController: authController,
-                ),
-                                 
+                  onNavigateToSection: (index) {
+                    debugPrint('Dashboard recibió navegación a index: $index');
+                    setState(() => selectedIndex = index);
+                  },
+                ),             
                 // Page Content
                 Expanded(
                   child: _buildPageContent(),
@@ -63,33 +96,23 @@ class _DashboardPageState extends State<DashboardPage> {
   Widget _buildPageContent() {
     switch (selectedIndex) {
       case 0:
-        return const DashboardContent(); // Vista home (sin cambios)
+        return const DashboardContent(); // Vista home
       case 1:
-        return const AsociadosMainView(); // NUEVA VISTA DE ASOCIADOS
+        return const AsociadosMainView(); // Vista de Asociados
       case 2:
-        return _buildPlaceholderView(
-          title: 'Cargas Familiares',
-          icon: Icons.family_restroom_outlined,
-          description: 'Gestión de cargas familiares\n(Próximamente)',
-        );
+        return const CargasFamiliaresMainView(); // Vista de Cargas Familiares
       case 3:
-        return _buildPlaceholderView(
-          title: 'Historial Clínico',
-          icon: Icons.medical_information_outlined,
-          description: 'Historial médico de asociados\n(Próximamente)',
-        );
+        return const HistorialClinicoMainView(); // Vista de Historial Clínico
       case 4:
         return _buildPlaceholderView(
           title: 'Reserva de Horas',
           icon: Icons.schedule_outlined,
           description: 'Sistema de reservas médicas\n(Próximamente)',
         );
-      case 5:
-        return _buildPlaceholderView(
-          title: 'Configuración',
-          icon: Icons.settings_outlined,
-          description: 'Configuración del sistema\n(Próximamente)',
-        );
+      case 5: // Mantener case 5 para que TopBar pueda navegar aquí
+        return const ConfiguracionView(); // Solo accesible desde TopBar
+      case 6: // NUEVO: Case para perfil
+        return const PerfilView(); // Vista de perfil
       default:
         return const DashboardContent();
     }
