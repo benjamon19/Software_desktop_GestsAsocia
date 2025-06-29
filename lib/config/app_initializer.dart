@@ -5,6 +5,7 @@ import 'firebase_config.dart';
 import 'window_config.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/theme_controller.dart';
+
 class AppInitializer {
   
   /// Inicializar toda la aplicación
@@ -21,7 +22,6 @@ class AppInitializer {
     if (!_isDesktop) return;
 
     try {
-      // Solo importar y usar clases desktop si no es web
       if (kDebugMode) {
         print('Aplicación desktop iniciada con configuración optimizada');
       }
@@ -121,6 +121,7 @@ class AppInitializer {
       }
     }
   }
+  
   static bool get _isDesktop {
     if (kIsWeb) return false;
     

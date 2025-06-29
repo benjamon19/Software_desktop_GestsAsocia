@@ -1,6 +1,6 @@
-// lib/config/window_config.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:window_manager/window_manager.dart';
 
 class WindowConfig {
   // Configuración de tamaños
@@ -23,7 +23,6 @@ class WindowConfig {
         defaultTargetPlatform == TargetPlatform.macOS) {
       
       try {
-        // Importación condicional de window_manager
         await _configureWindow();
       } catch (e) {
         if (kDebugMode) {
@@ -34,51 +33,40 @@ class WindowConfig {
     }
   }
 
-  /// Configurar ventana usando window_manager (solo desktop)
+  /// Configurar ventana usando window_manager
   static Future<void> _configureWindow() async {
     try {
-      // Solo importar window_manager si no es web
-      final windowManager = await _getWindowManager();
-      if (windowManager == null) return;
-
+      // Asegurar que window manager esté inicializado
       await windowManager.ensureInitialized();
 
-      const windowOptions = {
-        'size': {'width': minWidth, 'height': minHeight},
-        'minimumSize': {'width': minWidth, 'height': minHeight}, 
-        'center': true,
-        'backgroundColor': Colors.white,
-        'skipTaskbar': false,
-        'titleBarStyle': 'normal',
-      };
+      // Configurar opciones de ventana
+      const WindowOptions windowOptions = WindowOptions(
+        size: Size(minWidth, minHeight),
+        minimumSize: Size(minWidth, minHeight),
+        center: true,
+        backgroundColor: Colors.transparent,
+        skipTaskbar: false,
+        titleBarStyle: TitleBarStyle.normal,
+      );
 
-      // Simular configuración de ventana
+      // Esperar hasta que esté listo para mostrar
+      await windowManager.waitUntilReadyToShow(windowOptions, () async {
+        await windowManager.show();
+        await windowManager.focus();
+      });
+
+      // Establecer título
+      await windowManager.setTitle('GestAsocia');
+
       if (kDebugMode) {
-        print('Configurando ventana con opciones: $windowOptions');
+        print('Window manager configurado correctamente');
       }
-
-      // await windowManager.waitUntilReadyToShow(windowOptions, () async {
-      //   await windowManager.show();
-      //   await windowManager.focus();
-      // });
-
-      // await windowManager.setTitle('GestAsocia');
       
     } catch (e) {
       if (kDebugMode) {
-        print('Error en configuración de ventana: $e');
+        print('Error en configuración de window manager: $e');
       }
-    }
-  }
-
-  /// Obtener window_manager de forma segura
-  static Future<dynamic> _getWindowManager() async {
-    try {
-      // Por ahora retornamos null para evitar imports problemáticos
-      // En el futuro se puede usar importación condicional
-      return null;
-    } catch (e) {
-      return null;
+      // No relanzar el error para evitar crash de la app
     }
   }
 }

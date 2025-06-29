@@ -9,6 +9,12 @@ import '../widgets/dashboard/dashboard_content.dart';
 import '../widgets/dashboard/modules/gestion_asociados/asociados_main_view.dart';
 // IMPORTACIÓN - Módulo de Cargas Familiares
 import '../widgets/dashboard/modules/gestion_cargas_familiares/cargas_familiares_main_view.dart';
+// IMPORTACIÓN - Módulo de Historial Clínico
+import '../widgets/dashboard/modules/gestion_historial_clinico/historial_clinico_main_view.dart';
+// IMPORTACIÓN - Configuración
+import '../widgets/dashboard/configuracion/configuracion_view.dart';
+// IMPORTACIÓN - Perfil 
+import '../widgets/dashboard/perfil/perfil_view.dart';
 import '../utils/dashboard_data.dart';
 import '../utils/app_theme.dart';
 
