@@ -5,7 +5,6 @@ import 'firebase_config.dart';
 import 'window_config.dart';
 import '../controllers/auth_controller.dart';
 import '../controllers/theme_controller.dart';
-
 class AppInitializer {
   
   /// Inicializar toda la aplicación

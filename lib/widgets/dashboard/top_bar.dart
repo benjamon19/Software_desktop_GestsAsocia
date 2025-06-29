@@ -1,3 +1,4 @@
+// lib/widgets/dashboard/top_bar.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/auth_controller.dart';
@@ -9,6 +10,7 @@ class TopBar extends StatelessWidget {
   final String currentPageTitle;
   final VoidCallback onMenuToggle;
   final AuthController authController;
+  final Function(int)? onNavigateToSection; // Para navegar a secciones
 
   const TopBar({
     super.key,
@@ -16,6 +18,7 @@ class TopBar extends StatelessWidget {
     required this.currentPageTitle,
     required this.onMenuToggle,
     required this.authController,
+    this.onNavigateToSection,
   });
 
   @override
@@ -87,7 +90,7 @@ class TopBar extends StatelessWidget {
           ),
           const SizedBox(width: 20),
           
-          // User Menu (sin campana)
+          // User Menu
           _buildUserMenu(context),
         ],
       ),
@@ -213,8 +216,14 @@ class TopBar extends StatelessWidget {
   void _handleMenuAction(String value, BuildContext context) {
     switch (value) {
       case 'profile':
+        if (onNavigateToSection != null) {
+          onNavigateToSection!(6); // CAMBIO: navegar al index 6 para perfil
+        }
         break;
       case 'settings':
+        if (onNavigateToSection != null) {
+          onNavigateToSection!(5); // index 5 para configuración
+        }
         break;
       case 'logout':
         _showLogoutDialog(context);
