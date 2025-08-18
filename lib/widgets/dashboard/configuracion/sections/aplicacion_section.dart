@@ -172,7 +172,7 @@ class AplicacionSection extends StatelessWidget {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: AppTheme.primaryColor,
+            activeThumbColor: AppTheme.primaryColor,
           ),
         ],
       ),
@@ -234,7 +234,7 @@ class AplicacionSection extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Obx(() => DropdownButtonFormField<String>(
-            value: controller.dateFormat.value,
+            initialValue: controller.dateFormat.value,
             decoration: InputDecoration(
               filled: true,
               fillColor: AppTheme.getSurfaceColor(context),

@@ -1,7 +1,9 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../widgets/dashboard/modules/gestion_cargas_familiares/shared/dialogs/new_carga_familiar_dialog.dart';
 
 class CargasFamiliaresController extends GetxController {
-  // Estados de vista (como asociados)
+  // Estados de vista
   static const int listaView = 0;
   static const int detalleView = 1;
 
@@ -9,13 +11,16 @@ class CargasFamiliaresController extends GetxController {
   RxBool isLoading = false.obs;
   RxInt currentView = listaView.obs;
   RxString searchQuery = ''.obs;
-  RxString selectedFilter = 'todos'.obs; // todos, hijo, conyuge, padre
-  RxString selectedStatus = 'activas'.obs; // activas, inactivas, todas
-  
+  RxString selectedFilter = 'todos'.obs;
+  RxString selectedStatus = 'activas'.obs;
+
   // Datos
   Rxn<Map<String, dynamic>> selectedCarga = Rxn<Map<String, dynamic>>();
   RxList<Map<String, dynamic>> cargasList = <Map<String, dynamic>>[].obs;
   RxList<Map<String, dynamic>> filteredCargas = <Map<String, dynamic>>[].obs;
+
+  // Control de diálogo
+  bool _isDialogOpen = false;
 
   @override
   void onInit() {
@@ -24,7 +29,6 @@ class CargasFamiliaresController extends GetxController {
   }
 
   // ========== NAVEGACIÓN ==========
-
   void selectCarga(Map<String, dynamic> carga) {
     selectedCarga.value = carga;
     currentView.value = detalleView;
@@ -41,7 +45,6 @@ class CargasFamiliaresController extends GetxController {
   }
 
   // ========== BÚSQUEDA ==========
-
   void searchCargas(String query) {
     searchQuery.value = query;
     _applyFilters();
@@ -60,28 +63,22 @@ class CargasFamiliaresController extends GetxController {
   void _applyFilters() {
     List<Map<String, dynamic>> filtered = List.from(cargasList);
 
-    // Filtro por búsqueda
     if (searchQuery.value.isNotEmpty) {
+      final query = searchQuery.value.toLowerCase();
       filtered = filtered.where((carga) {
         final nombre = '${carga['nombre']} ${carga['apellido']}'.toLowerCase();
         final rut = carga['rut'].toString().toLowerCase();
         final titular = carga['titular'].toString().toLowerCase();
-        final query = searchQuery.value.toLowerCase();
-        
-        return nombre.contains(query) || 
-               rut.contains(query) || 
-               titular.contains(query);
+        return nombre.contains(query) || rut.contains(query) || titular.contains(query);
       }).toList();
     }
 
-    // Filtro por parentesco
     if (selectedFilter.value != 'todos') {
-      filtered = filtered.where((carga) => 
-        carga['parentesco'].toLowerCase() == selectedFilter.value.toLowerCase()
-      ).toList();
+      final filter = selectedFilter.value.toLowerCase();
+      filtered = filtered.where((carga) =>
+          carga['parentesco'].toLowerCase() == filter).toList();
     }
 
-    // Filtro por estado
     if (selectedStatus.value == 'activas') {
       filtered = filtered.where((carga) => carga['estado'] == 'Activa').toList();
     } else if (selectedStatus.value == 'inactivas') {
@@ -91,10 +88,24 @@ class CargasFamiliaresController extends GetxController {
     filteredCargas.value = filtered;
   }
 
-  // ========== ACCIONES CRUD ==========
+  // ========== CRUD ==========
+  Future<void> addNewCarga() async {
+    if (_isDialogOpen) return;
 
-  void addNewCarga() {
-    Get.snackbar('Nueva Carga', 'Función para agregar nueva carga familiar');
+    final context = Get.context;
+    if (context == null) {
+      Get.snackbar(
+        'Error',
+        'No se puede abrir el formulario. Intente nuevamente.',
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    _isDialogOpen = true;
+    await NewCargaFamiliarDialog.show(context);
+    _isDialogOpen = false;
   }
 
   void editCarga() {
@@ -134,7 +145,6 @@ class CargasFamiliaresController extends GetxController {
   }
 
   // ========== DATOS SIMULADOS ==========
-
   void _loadSampleData() {
     cargasList.value = [
       {
@@ -293,12 +303,11 @@ class CargasFamiliaresController extends GetxController {
   }
 
   // ========== GETTERS ==========
-
   bool get hasSelectedCarga => selectedCarga.value != null;
   bool get isListView => currentView.value == listaView;
   bool get isDetailView => currentView.value == detalleView;
   bool get hasSearchQuery => searchQuery.value.isNotEmpty;
-  
+
   String get currentTitle {
     if (isDetailView && hasSelectedCarga) {
       return 'Detalle de ${selectedCarga.value!['nombre']}';

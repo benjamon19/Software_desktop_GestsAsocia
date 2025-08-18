@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import '../widgets/dashboard/modules/gestion_asociados/shared//dialogs/new_asociado_dialog.dart';
 
 class AsociadosController extends GetxController {
   // Variables observables
@@ -150,11 +151,7 @@ class AsociadosController extends GetxController {
   }
 
   void newAsociado() {
-    Get.snackbar(
-      'Nuevo Asociado', 
-      'Función para crear nuevo asociado (próximamente)',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    NewAsociadoDialog.show(Get.context!);
   }
 
   // Getters útiles
