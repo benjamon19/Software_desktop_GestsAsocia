@@ -1,0 +1,6 @@
+{
+  "name": "flutter-web-app",
+  "scripts": {
+    "build": "flutter build web"
+  }
+}

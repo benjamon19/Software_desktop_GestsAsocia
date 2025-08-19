@@ -203,7 +203,7 @@ class NewCargaFamiliarDialog {
           ),
         ),
         child: DropdownButtonFormField<String>(
-          value: items.first,
+          initialValue: items.first,
           items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
           onChanged: (value) {},
           style: TextStyle(color: AppTheme.getTextPrimary(context)),
