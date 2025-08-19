@@ -91,10 +91,6 @@ class NewCargaFamiliarDialog {
                 const SizedBox(height: 16),
 
                 _buildDropdown(context, 'Plan', ['Básico', 'Premium', 'VIP', 'Senior', 'Infantil'], Icons.card_membership),
-                const SizedBox(height: 16),
-
-                // Alertas (opcional)
-                _buildAlertField(context),
                 const SizedBox(height: 24),
 
                 // --- Información Familiar ---
@@ -231,40 +227,6 @@ class NewCargaFamiliarDialog {
           dropdownColor: AppTheme.getSurfaceColor(context),
           isExpanded: true,
         ),
-      ),
-    );
-  }
-
-  static Widget _buildAlertField(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
-        border: Border.all(color: Colors.red.withOpacity(0.3)),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.warning, color: Colors.red, size: 18),
-              const SizedBox(width: 8),
-              Text(
-                'Alertas (1)',
-                style: TextStyle(
-                  color: Colors.red,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '• Control pendiente',
-            style: TextStyle(color: Colors.red.withOpacity(0.7)),
-          ),
-        ],
       ),
     );
   }
