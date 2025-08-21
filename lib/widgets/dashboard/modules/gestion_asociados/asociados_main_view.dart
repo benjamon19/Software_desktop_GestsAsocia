@@ -47,8 +47,8 @@ class AsociadosMainView extends StatelessWidget {
                   onPressed: () => _goBackToList(controller),
                   backgroundColor: Colors.grey[600],
                   foregroundColor: Colors.white,
-                  child: const Icon(Icons.arrow_back, size: 20),
                   tooltip: 'Volver a la lista',
+                  child: const Icon(Icons.arrow_back, size: 20)
                 ),
                 const SizedBox(width: 10),
                 // Botón agregar asociado
