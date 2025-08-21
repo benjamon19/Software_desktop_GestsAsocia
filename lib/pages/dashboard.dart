@@ -28,8 +28,18 @@ class DashboardPage extends StatefulWidget {
 class _DashboardPageState extends State<DashboardPage> {
   final AuthController authController = Get.find<AuthController>();
   final ThemeController themeController = Get.find<ThemeController>();
-  bool isDrawerOpen = true;
+  
+  // ACTUALIZADO: Estados para el sidebar
+  bool isDrawerOpen = true; // Mantener para compatibilidad
+  bool isSidebarCollapsed = false; // NUEVO: Estado de colapso del sidebar
   int selectedIndex = 0;
+
+  // NUEVO: Método para alternar el colapso del sidebar
+  void _toggleSidebar() {
+    setState(() {
+      isSidebarCollapsed = !isSidebarCollapsed;
+    });
+  }
 
   // NUEVO: Método para obtener el título de la página actual
   String _getCurrentPageTitle() {
@@ -53,37 +63,56 @@ class _DashboardPageState extends State<DashboardPage> {
     }
   }
 
+  // NUEVO: Método para manejar la navegación desde el TopBar
+  void _handleNavigateToSection(int index) {
+    debugPrint('Dashboard recibió navegación a index: $index');
+    setState(() {
+      selectedIndex = index;
+    });
+  }
+
+  // NUEVO: Método para manejar la selección de items del sidebar
+  void _handleItemSelected(int index) {
+    setState(() {
+      selectedIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(context),
       body: Row(
         children: [
-          // Sidebar Menu
-          if (isDrawerOpen)
-            SidebarMenu(
-              selectedIndex: selectedIndex,
-              onItemSelected: (index) => setState(() => selectedIndex = index),
-            ),
+          // ACTUALIZADO: Sidebar Menu con animaciones
+          SidebarMenu(
+            selectedIndex: selectedIndex,
+            onItemSelected: _handleItemSelected,
+            isCollapsed: isSidebarCollapsed,
+            onToggleCollapse: _toggleSidebar,
+          ),
                      
           // Main Content
           Expanded(
             child: Column(
               children: [
-                // Top Bar - CAMBIO: usar el método personalizado
+                // ACTUALIZADO: Top Bar con controles de sidebar
                 TopBar(
                   isDrawerOpen: isDrawerOpen,
-                  currentPageTitle: _getCurrentPageTitle(), // CAMBIO AQUÍ
-                  onMenuToggle: () => setState(() => isDrawerOpen = !isDrawerOpen),
+                  isSidebarCollapsed: isSidebarCollapsed, // NUEVO
+                  currentPageTitle: _getCurrentPageTitle(),
+                  onMenuToggle: () => setState(() => isDrawerOpen = !isDrawerOpen), // Mantener para compatibilidad
+                  onSidebarToggle: _toggleSidebar, // NUEVO
                   authController: authController,
-                  onNavigateToSection: (index) {
-                    debugPrint('Dashboard recibió navegación a index: $index');
-                    setState(() => selectedIndex = index);
-                  },
+                  onNavigateToSection: _handleNavigateToSection,
                 ),             
                 // Page Content
                 Expanded(
-                  child: _buildPageContent(),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOutCubic,
+                    child: _buildPageContent(),
+                  ),
                 ),
               ],
             ),

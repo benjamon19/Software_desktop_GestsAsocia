@@ -8,7 +8,7 @@ class DashboardData {
       'icon': Icons.dashboard_outlined,
     },
     {
-      'title': 'Gestión de Asociados',
+      'title': 'Asociados',
       'icon': Icons.people_outline,
     },
     {

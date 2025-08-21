@@ -1,4 +1,3 @@
-// lib/widgets/dashboard/top_bar.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../controllers/auth_controller.dart';
@@ -7,16 +6,20 @@ import '../../utils/app_theme.dart';
 
 class TopBar extends StatelessWidget {
   final bool isDrawerOpen;
+  final bool isSidebarCollapsed; // Nuevo parámetro
   final String currentPageTitle;
   final VoidCallback onMenuToggle;
+  final VoidCallback onSidebarToggle; // Nuevo callback
   final AuthController authController;
-  final Function(int)? onNavigateToSection; // Para navegar a secciones
+  final Function(int)? onNavigateToSection;
 
   const TopBar({
     super.key,
     required this.isDrawerOpen,
+    required this.isSidebarCollapsed,
     required this.currentPageTitle,
     required this.onMenuToggle,
+    required this.onSidebarToggle,
     required this.authController,
     this.onNavigateToSection,
   });
@@ -40,13 +43,14 @@ class TopBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Menu Button
+          // Menu Button - Ahora controla el colapso del sidebar
           IconButton(
             icon: Icon(
-              isDrawerOpen ? Icons.menu_open : Icons.menu,
+              isSidebarCollapsed ? Icons.menu : Icons.menu_open,
               color: AppTheme.getTextPrimary(context),
             ),
-            onPressed: onMenuToggle,
+            onPressed: onSidebarToggle,
+            tooltip: isSidebarCollapsed ? 'Expandir menú' : 'Contraer menú',
           ),
           const SizedBox(width: 20),
           
@@ -217,12 +221,12 @@ class TopBar extends StatelessWidget {
     switch (value) {
       case 'profile':
         if (onNavigateToSection != null) {
-          onNavigateToSection!(6); // CAMBIO: navegar al index 6 para perfil
+          onNavigateToSection!(6);
         }
         break;
       case 'settings':
         if (onNavigateToSection != null) {
-          onNavigateToSection!(5); // index 5 para configuración
+          onNavigateToSection!(5);
         }
         break;
       case 'logout':
