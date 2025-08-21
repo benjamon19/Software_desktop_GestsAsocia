@@ -11,12 +11,12 @@ class EmptyStateSection extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _buildMainIcon(context),
-          const SizedBox(height: 24),
-          _buildTitle(context),
-          const SizedBox(height: 12),
-          _buildDescription(context),
           const SizedBox(height: 32),
-          _buildFeatureOptions(context),
+          _buildTitle(context),
+          const SizedBox(height: 16),
+          _buildDescription(context),
+          const SizedBox(height: 40),
+          _buildActionSuggestions(context),
         ],
       ),
     );
@@ -24,106 +24,100 @@ class EmptyStateSection extends StatelessWidget {
 
   Widget _buildMainIcon(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(40),
+      padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: AppTheme.primaryColor.withValues(alpha: 0.1),
+        color: AppTheme.primaryColor.withValues(alpha: 0.08),
         shape: BoxShape.circle,
       ),
       child: Icon(
-        Icons.search,
-        size: 80,
-        color: AppTheme.primaryColor,
+        Icons.people_outline,
+        size: 64,
+        color: AppTheme.primaryColor.withValues(alpha: 0.7),
       ),
     );
   }
 
   Widget _buildTitle(BuildContext context) {
     return Text(
-      'Buscar Asociado',
+      'No hay asociados disponibles',
       style: TextStyle(
-        fontSize: 24,
+        fontSize: 28,
         fontWeight: FontWeight.bold,
         color: AppTheme.getTextPrimary(context),
+        letterSpacing: -0.5,
       ),
     );
   }
 
   Widget _buildDescription(BuildContext context) {
-    return Text(
-      'Ingresa el RUT del asociado, usa la huella digital\no escanea el código de barras para buscar',
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        fontSize: 16,
-        color: AppTheme.getTextSecondary(context),
-        height: 1.5,
+    return Container(
+      constraints: const BoxConstraints(maxWidth: 400),
+      child: Text(
+        'Actualmente no tienes asociados registrados en el sistema. Puedes agregar un nuevo asociado usando el botón flotante.',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: 16,
+          color: AppTheme.getTextSecondary(context),
+          height: 1.6,
+          letterSpacing: 0.1,
+        ),
       ),
     );
   }
 
-  Widget _buildFeatureOptions(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        _buildFeatureItem(
-          context,
-          icon: Icons.fingerprint,
-          title: 'Huella Digital',
-          description: 'Autenticación biométrica',
-        ),
-        const SizedBox(width: 40),
-        _buildFeatureItem(
-          context,
-          icon: Icons.qr_code_scanner,
-          title: 'Código de Barras',
-          description: 'Escaneo rápido',
-        ),
-        const SizedBox(width: 40),
-        _buildFeatureItem(
-          context,
-          icon: Icons.badge,
-          title: 'Búsqueda por RUT',
-          description: 'Búsqueda manual',
-        ),
-      ],
+  Widget _buildActionSuggestions(BuildContext context) {
+    return _buildSuggestionItem(
+      context,
+      icon: Icons.person_add_outlined,
+      title: 'Agregar nuevo asociado',
+      description: 'Usa el botón flotante para registrar un asociado',
     );
   }
 
-  Widget _buildFeatureItem(
+  Widget _buildSuggestionItem(
     BuildContext context, {
     required IconData icon,
     required String title,
     required String description,
   }) {
-    return SizedBox(
-      width: 140, // Ancho fijo para que todas sean del mismo tamaño
-      child: Column(
-        children: [
-          Icon(
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryColor.withValues(alpha: 0.08),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(
             icon,
-            size: 32,
+            size: 24,
             color: AppTheme.primaryColor,
           ),
-          const SizedBox(height: 12),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.getTextPrimary(context),
-            ),
-            textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 12),
+        Text(
+          title,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.getTextPrimary(context),
           ),
-          const SizedBox(height: 4),
-          Text(
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 4),
+        Container(
+          constraints: const BoxConstraints(maxWidth: 200),
+          child: Text(
             description,
             style: TextStyle(
               fontSize: 12,
               color: AppTheme.getTextSecondary(context),
+              height: 1.4,
             ),
             textAlign: TextAlign.center,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

@@ -3,8 +3,6 @@ import 'package:get/get.dart';
 import '../../../../../../utils/app_theme.dart';
 import '../../../../../../controllers/asociados_controller.dart';
 import '../components/rut_search_field.dart';
-import '../components/biometric_button.dart';
-import '../components/qr_scanner_button.dart';
 
 class SearchSection extends StatelessWidget {
   final AsociadosController controller;
@@ -16,51 +14,45 @@ class SearchSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: AppTheme.getSurfaceColor(context),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Theme.of(context).brightness == Brightness.dark 
-                ? Colors.black.withValues(alpha: 0.3)
-                : Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildSectionHeader(context),
-          const SizedBox(height: 16),
-          _buildSearchControls(context),
-          const SizedBox(height: 12),
-          _buildHelpText(context),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _buildSectionHeader(context),
+        const SizedBox(height: 12),
+        _buildSearchControls(context),
+        const SizedBox(height: 8)
+      ],
     );
   }
 
   Widget _buildSectionHeader(BuildContext context) {
-    return Text(
-      'Buscar Asociado',
-      style: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-        color: AppTheme.getTextPrimary(context),
-      ),
+    return Row(
+      children: [
+        Icon(
+          Icons.search,
+          color: AppTheme.primaryColor,
+          size: 18,
+        ),
+        const SizedBox(width: 8),
+        Text(
+          'Buscar Asociado',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.getTextPrimary(context),
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildSearchControls(BuildContext context) {
     return Obx(() => Row(
       children: [
-        // Campo principal de búsqueda
+        // Campo principal de búsqueda (más ancho)
         Expanded(
-          flex: 3,
+          flex: 5,
           child: RutSearchField(
             onSearch: controller.searchAsociado,
             isLoading: controller.isLoading.value,
@@ -69,30 +61,84 @@ class SearchSection extends StatelessWidget {
         
         const SizedBox(width: 12),
         
-        // Botón biométrico
-        BiometricButton(
-          onPressed: controller.isLoading.value ? null : controller.biometricSearch,
-          isLoading: controller.isLoading.value,
-        ),
-        
-        const SizedBox(width: 8),
-        
-        // Botón QR Scanner
-        QrScannerButton(
-          onPressed: controller.isLoading.value ? null : controller.qrCodeSearch,
-          isLoading: controller.isLoading.value,
+        // Menú desplegable "Advanced"
+        PopupMenuButton<String>(
+          onSelected: (String value) {
+            if (value == 'biometric') {
+              controller.biometricSearch();
+            } else if (value == 'qr') {
+              controller.qrCodeSearch();
+            }
+          },
+          enabled: !controller.isLoading.value,
+          itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+            PopupMenuItem<String>(
+              value: 'biometric',
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.fingerprint,
+                    size: 18,
+                    color: AppTheme.getTextPrimary(context),
+                  ),
+                  const SizedBox(width: 8),
+                  Text('Búsqueda biométrica'),
+                ],
+              ),
+            ),
+            PopupMenuItem<String>(
+              value: 'qr',
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.qr_code_scanner,
+                    size: 18,
+                    color: AppTheme.getTextPrimary(context),
+                  ),
+                  const SizedBox(width: 8),
+                  Text('Escanear código QR'),
+                ],
+              ),
+            ),
+          ],
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.auto_awesome, // Icono de IA
+                  size: 16,
+                  color: AppTheme.primaryColor,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  'Advanced',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppTheme.primaryColor,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.keyboard_arrow_down,
+                  size: 16,
+                  color: AppTheme.primaryColor,
+                ),
+              ],
+            ),
+          ),
         ),
       ],
     ));
-  }
-
-  Widget _buildHelpText(BuildContext context) {
-    return Text(
-      'Ingresa el RUT (ej: 12345678-9), usa la huella digital o escanea el código QR del asociado',
-      style: TextStyle(
-        fontSize: 14,
-        color: AppTheme.getTextSecondary(context),
-      ),
-    );
   }
 }

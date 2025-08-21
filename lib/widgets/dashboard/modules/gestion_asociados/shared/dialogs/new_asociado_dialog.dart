@@ -1,10 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:gestasocia/utils/app_theme.dart';
+import '../../../../../../controllers/asociados_controller.dart';
 
 class NewAsociadoDialog {
   static void show(BuildContext context) {
+    final AsociadosController controller = Get.find<AsociadosController>();
+    
+    // Controladores de texto
+    final nombreController = TextEditingController();
+    final apellidoController = TextEditingController();
+    final rutController = TextEditingController();
+    final emailController = TextEditingController();
+    final telefonoController = TextEditingController();
+    final direccionController = TextEditingController();
+    
+    // Variables reactivas
+    final selectedEstadoCivil = 'Soltero'.obs;
+    final selectedPlan = 'Básico'.obs;
+    final selectedDate = Rxn<DateTime>();
+    final isLoading = false.obs;
+
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (context) => AlertDialog(
         backgroundColor: AppTheme.getSurfaceColor(context),
         shape: RoundedRectangleBorder(
@@ -47,23 +66,29 @@ class NewAsociadoDialog {
                 
                 Row(
                   children: [
-                    Expanded(child: _buildTextField(context, 'Nombre', Icons.person)),
+                    Expanded(child: _buildTextField(context, 'Nombre', Icons.person, nombreController)),
                     const SizedBox(width: 16),
-                    Expanded(child: _buildTextField(context, 'Apellido', Icons.person_outline)),
+                    Expanded(child: _buildTextField(context, 'Apellido', Icons.person_outline, apellidoController)),
                   ],
                 ),
                 const SizedBox(height: 16),
                 
                 Row(
                   children: [
-                    Expanded(child: _buildTextField(context, 'RUT', Icons.badge)),
+                    Expanded(child: _buildTextField(context, 'RUT', Icons.badge, rutController)),
                     const SizedBox(width: 16),
-                    Expanded(child: _buildTextField(context, 'Fecha Nacimiento', Icons.calendar_today)),
+                    Expanded(child: _buildDatePicker(context, selectedDate)),
                   ],
                 ),
                 const SizedBox(height: 16),
                 
-                _buildDropdown(context, 'Estado Civil', ['Soltero', 'Casado', 'Divorciado', 'Viudo'], Icons.favorite),
+                Obx(() => _buildDropdown(
+                  context, 
+                  'Estado Civil', 
+                  ['Soltero', 'Casado', 'Divorciado', 'Viudo'], 
+                  Icons.favorite,
+                  selectedEstadoCivil,
+                )),
                 
                 const SizedBox(height: 24),
                 
@@ -78,11 +103,11 @@ class NewAsociadoDialog {
                 ),
                 const SizedBox(height: 16),
                 
-                _buildTextField(context, 'Email', Icons.email),
+                _buildTextField(context, 'Email', Icons.email, emailController),
                 const SizedBox(height: 16),
-                _buildTextField(context, 'Teléfono', Icons.phone),
+                _buildTextField(context, 'Teléfono', Icons.phone, telefonoController),
                 const SizedBox(height: 16),
-                _buildTextField(context, 'Dirección', Icons.location_on),
+                _buildTextField(context, 'Dirección', Icons.location_on, direccionController),
                 
                 const SizedBox(height: 24),
                 
@@ -97,14 +122,20 @@ class NewAsociadoDialog {
                 ),
                 const SizedBox(height: 16),
                 
-                _buildDropdown(context, 'Plan', ['Básico', 'Premium', 'VIP', 'Empresarial'], Icons.card_membership),
+                Obx(() => _buildDropdown(
+                  context, 
+                  'Plan', 
+                  ['Básico', 'Premium', 'VIP', 'Empresarial'], 
+                  Icons.card_membership,
+                  selectedPlan,
+                )),
               ],
             ),
           ),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: isLoading.value ? null : () => Navigator.of(context).pop(),
             child: Text(
               'Cancelar',
               style: TextStyle(
@@ -112,10 +143,38 @@ class NewAsociadoDialog {
               ),
             ),
           ),
-          ElevatedButton(
-            onPressed: () {
-              // Aquí no hace nada por ahora
-              Navigator.of(context).pop();
+          Obx(() => ElevatedButton(
+            onPressed: isLoading.value ? null : () async {
+              // Validar campos requeridos
+              if (_validateFields(
+                nombreController.text,
+                apellidoController.text,
+                rutController.text,
+                emailController.text,
+                telefonoController.text,
+                direccionController.text,
+                selectedDate.value,
+              )) {
+                isLoading.value = true;
+                
+                final success = await controller.createAsociado(
+                  nombre: nombreController.text,
+                  apellido: apellidoController.text,
+                  rut: rutController.text,
+                  fechaNacimiento: selectedDate.value!,
+                  estadoCivil: selectedEstadoCivil.value,
+                  email: emailController.text,
+                  telefono: telefonoController.text,
+                  direccion: direccionController.text,
+                  plan: selectedPlan.value,
+                );
+                
+                isLoading.value = false;
+                
+                if (success && context.mounted) {
+                  Navigator.of(context).pop();
+                }
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryColor,
@@ -123,15 +182,100 @@ class NewAsociadoDialog {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             ),
-            child: const Text('Crear Asociado'),
-          ),
+            child: isLoading.value 
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : const Text('Agregar Asociado'),
+          )),
         ],
       ),
     );
   }
 
-  static Widget _buildTextField(BuildContext context, String label, IconData icon) {
+  static bool _validateFields(
+    String nombre,
+    String apellido, 
+    String rut,
+    String email,
+    String telefono,
+    String direccion,
+    DateTime? fechaNacimiento,
+  ) {
+    if (nombre.trim().isEmpty) {
+      Get.snackbar('Error', 'El nombre es requerido',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.colorScheme.error.withValues(alpha: 0.8),
+        colorText: Get.theme.colorScheme.onError,
+      );
+      return false;
+    }
+    
+    if (apellido.trim().isEmpty) {
+      Get.snackbar('Error', 'El apellido es requerido',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.colorScheme.error.withValues(alpha: 0.8),
+        colorText: Get.theme.colorScheme.onError,
+      );
+      return false;
+    }
+    
+    if (rut.trim().isEmpty) {
+      Get.snackbar('Error', 'El RUT es requerido',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.colorScheme.error.withValues(alpha: 0.8),
+        colorText: Get.theme.colorScheme.onError,
+      );
+      return false;
+    }
+    
+    if (email.trim().isEmpty) {
+      Get.snackbar('Error', 'El email es requerido',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.colorScheme.error.withValues(alpha: 0.8),
+        colorText: Get.theme.colorScheme.onError,
+      );
+      return false;
+    }
+    
+    if (telefono.trim().isEmpty) {
+      Get.snackbar('Error', 'El teléfono es requerido',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.colorScheme.error.withValues(alpha: 0.8),
+        colorText: Get.theme.colorScheme.onError,
+      );
+      return false;
+    }
+    
+    if (direccion.trim().isEmpty) {
+      Get.snackbar('Error', 'La dirección es requerida',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.colorScheme.error.withValues(alpha: 0.8),
+        colorText: Get.theme.colorScheme.onError,
+      );
+      return false;
+    }
+    
+    if (fechaNacimiento == null) {
+      Get.snackbar('Error', 'La fecha de nacimiento es requerida',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Get.theme.colorScheme.error.withValues(alpha: 0.8),
+        colorText: Get.theme.colorScheme.onError,
+      );
+      return false;
+    }
+    
+    return true;
+  }
+
+  static Widget _buildTextField(BuildContext context, String label, IconData icon, TextEditingController controller) {
     return TextField(
+      controller: controller,
       style: TextStyle(color: AppTheme.getTextPrimary(context)),
       decoration: InputDecoration(
         labelText: label,
@@ -153,14 +297,68 @@ class NewAsociadoDialog {
     );
   }
 
-  static Widget _buildDropdown(BuildContext context, String label, List<String> items, IconData icon) {
+  static Widget _buildDatePicker(BuildContext context, Rxn<DateTime> selectedDate) {
+    return Obx(() => InkWell(
+      onTap: () async {
+        final DateTime? picked = await showDatePicker(
+          context: context,
+          initialDate: selectedDate.value ?? DateTime(1990),
+          firstDate: DateTime(1900),
+          lastDate: DateTime.now(),
+          builder: (context, child) {
+            return Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: Theme.of(context).colorScheme.copyWith(
+                  primary: AppTheme.primaryColor,
+                ),
+              ),
+              child: child!,
+            );
+          },
+        );
+        if (picked != null && context.mounted) {
+          selectedDate.value = picked;
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppTheme.getBorderLight(context)),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.calendar_today, color: AppTheme.primaryColor),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                selectedDate.value != null
+                    ? '${selectedDate.value!.day.toString().padLeft(2, '0')}/${selectedDate.value!.month.toString().padLeft(2, '0')}/${selectedDate.value!.year}'
+                    : 'Fecha Nacimiento',
+                style: TextStyle(
+                  color: selectedDate.value != null 
+                      ? AppTheme.getTextPrimary(context)
+                      : AppTheme.getTextSecondary(context),
+                  fontSize: 16,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ));
+  }
+
+  static Widget _buildDropdown(BuildContext context, String label, List<String> items, IconData icon, RxString selectedValue) {
     return SizedBox(
-      width: double.infinity, // ← Asegura que ocupe el ancho disponible sin desbordar
+      width: double.infinity,
       child: DropdownButtonFormField<String>(
-        initialValue: items.first,
+        initialValue: selectedValue.value,
         items: items.map((item) => DropdownMenuItem(value: item, child: Text(item))).toList(),
         onChanged: (value) {
-          // No hace nada por ahora
+          if (value != null) {
+            selectedValue.value = value;
+          }
         },
         style: TextStyle(color: AppTheme.getTextPrimary(context)),
         decoration: InputDecoration(
@@ -181,7 +379,7 @@ class NewAsociadoDialog {
           ),
         ),
         dropdownColor: AppTheme.getSurfaceColor(context),
-        isExpanded: true, // ← Clave: hace que el contenido se acomode bien dentro del ancho
+        isExpanded: true,
       ),
     );
   }

@@ -4,11 +4,13 @@ import '../../../../../../../utils/app_theme.dart';
 class ProfileHeader extends StatelessWidget {
   final Map<String, dynamic> asociado;
   final VoidCallback onEdit;
+  final VoidCallback? onBack;
 
   const ProfileHeader({
     super.key,
     required this.asociado,
     required this.onEdit,
+    this.onBack,
   });
 
   @override
@@ -29,42 +31,84 @@ class ProfileHeader extends StatelessWidget {
           topRight: Radius.circular(16),
         ),
       ),
-      child: Row(
+      child: Column(
         children: [
-          // Avatar
-          _buildAvatar(),
-          
-          const SizedBox(width: 20),
-          
-          // Información básica
-          Expanded(
-            child: _buildBasicInfo(),
+          // Fila superior con botón volver y botón editar
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              if (onBack != null)
+                IconButton(
+                  onPressed: onBack,
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  tooltip: 'Volver a la lista',
+                ),
+              if (onBack == null) const SizedBox(width: 48),
+            ],
           ),
           
-          // Botón de editar
-          _buildEditButton(),
+          const SizedBox(height: 8),
+          
+          // Información principal del asociado
+          Row(
+            children: [
+              // Avatar mejorado
+              _buildAvatar(),
+              
+              const SizedBox(width: 20),
+              
+              // Información básica
+              Expanded(
+                child: _buildBasicInfo(),
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
 
   Widget _buildAvatar() {
+    // Obtener iniciales del nombre
+    String initials = '';
+    if (asociado['nombre'] != null && asociado['apellido'] != null) {
+      initials = '${asociado['nombre'][0]}${asociado['apellido'][0]}'.toUpperCase();
+    }
+
     return Container(
-      width: 80,
-      height: 80,
+      width: 90,
+      height: 90,
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+        color: Colors.white.withValues(alpha: 0.15),
         shape: BoxShape.circle,
         border: Border.all(
           color: Colors.white.withValues(alpha: 0.3),
-          width: 2,
+          width: 3,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
-      child: Icon(
-        Icons.person,
-        size: 40,
-        color: Colors.white.withValues(alpha: 0.9),
-      ),
+      child: initials.isNotEmpty
+          ? Center(
+              child: Text(
+                initials,
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            )
+          : Icon(
+              Icons.person,
+              size: 45,
+              color: Colors.white.withValues(alpha: 0.9),
+            ),
     );
   }
 
@@ -72,64 +116,125 @@ class ProfileHeader extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Nombre completo
         Text(
-          '${asociado['nombre']} ${asociado['apellido']}',
+          '${asociado['nombre'] ?? ''} ${asociado['apellido'] ?? ''}'.trim(),
           style: const TextStyle(
-            fontSize: 24,
+            fontSize: 26,
             fontWeight: FontWeight.bold,
             color: Colors.white,
+            letterSpacing: -0.5,
+          ),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+        ),
+        
+        const SizedBox(height: 6),
+        
+        // RUT
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            'RUT: ${asociado['rut'] ?? 'N/A'}',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+              color: Colors.white.withValues(alpha: 0.95),
+            ),
           ),
         ),
-        const SizedBox(height: 4),
-        Text(
-          'RUT: ${asociado['rut']}',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.white.withValues(alpha: 0.9),
-          ),
+        
+        const SizedBox(height: 12),
+        
+        // Fila con estado y plan
+        Row(
+          children: [
+            _buildStatusBadge(),
+            const SizedBox(width: 12),
+            _buildPlanBadge(),
+          ],
         ),
-        const SizedBox(height: 8),
-        _buildStatusBadge(),
       ],
     );
   }
 
   Widget _buildStatusBadge() {
+    String status = asociado['estado'] ?? 'Activo';
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: _getStatusColor(asociado['estado']), // Fondo sólido con el color del estado
+        color: _getStatusColor(status),
         borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
-      child: Text(
-        asociado['estado'],
-        style: const TextStyle( // Texto blanco para buen contraste
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 6,
+            height: 6,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.9),
+              shape: BoxShape.circle,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Text(
+            status,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildEditButton() {
-    return IconButton(
-      onPressed: onEdit,
-      icon: const Icon(Icons.edit, color: Colors.white),
-      tooltip: 'Editar información',
+  Widget _buildPlanBadge() {
+    String plan = asociado['plan'] ?? 'Básico';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.3),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        plan,
+        style: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: Colors.white.withValues(alpha: 0.95),
+        ),
+      ),
     );
   }
 
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'activo':
-        return const Color(0xFF10B981);
+        return const Color(0xFF059669); // Verde más oscuro
       case 'inactivo':
-        return const Color(0xFFEF4444);
+        return const Color(0xFFDC2626); // Rojo más oscuro
       case 'suspendido':
-        return const Color(0xFFF59E0B);
+        return const Color(0xFFD97706); // Naranja más oscuro
       default:
-        return const Color(0xFF6B7280);
+        return const Color(0xFF4B5563); // Gris más oscuro
     }
   }
 }

@@ -7,11 +7,13 @@ import 'components/family_charges_card.dart';
 class ProfileSection extends StatefulWidget {
   final Map<String, dynamic> asociado;
   final VoidCallback onEdit;
+  final VoidCallback? onBack; // Agregar esta línea
 
   const ProfileSection({
     super.key,
     required this.asociado,
     required this.onEdit,
+    this.onBack, // Agregar esta línea
   });
 
   @override
