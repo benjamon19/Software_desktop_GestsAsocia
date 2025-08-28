@@ -7,8 +7,53 @@ import 'charts/weekly_attendance_chart.dart';
 import 'cards/next_appointments_card.dart';
 import 'cards/treatment_alert_card.dart';
 
-class ChartsGridSection extends StatelessWidget {
+class ChartsGridSection extends StatefulWidget {
   const ChartsGridSection({super.key});
+
+  @override
+  State<ChartsGridSection> createState() => _ChartsGridSectionState();
+}
+
+class _ChartsGridSectionState extends State<ChartsGridSection> 
+    with SingleTickerProviderStateMixin {
+  int _currentPage = 0;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  late Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+    _slideAnimation = Tween<Offset>(
+      begin: const Offset(0.1, 0),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOutQuart));
+    
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _changePage(int newPage) {
+    if (newPage != _currentPage && newPage >= 0 && newPage <= 3) {
+      _animationController.reset();
+      setState(() {
+        _currentPage = newPage;
+      });
+      _animationController.forward();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -30,20 +75,109 @@ class ChartsGridSection extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Análisis y Métricas', 
-            style: TextStyle(
-              fontSize: 18, 
-              fontWeight: FontWeight.w600, 
-              color: AppTheme.getTextPrimary(context)
-            )
+          // Header con navegación
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Análisis y Métricas', 
+                style: TextStyle(
+                  fontSize: 18, 
+                  fontWeight: FontWeight.w600, 
+                  color: AppTheme.getTextPrimary(context)
+                )
+              ),
+              _buildPageNavigation(),
+            ],
           ),
           const SizedBox(height: 20),
           
           Expanded(
-            child: _buildResponsiveLayout(),
+            child: AnimatedBuilder(
+              animation: _animationController,
+              builder: (context, child) {
+                return FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: SlideTransition(
+                    position: _slideAnimation,
+                    child: _buildResponsiveLayout(),
+                  ),
+                );
+              },
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildPageNavigation() {
+    return Row(
+      children: [
+        // Indicadores de página (4 páginas)
+        Row(
+          children: List.generate(4, (index) {
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: _currentPage == index 
+                    ? const Color(0xFF3B82F6)
+                    : AppTheme.getTextSecondary(context).withValues(alpha: 0.3),
+              ),
+            );
+          }),
+        ),
+        const SizedBox(width: 16),
+        
+        // Botones de navegación
+        Row(
+          children: [
+            _buildNavButton(
+              icon: Icons.chevron_left,
+              onPressed: _currentPage > 0 ? () => _changePage(_currentPage - 1) : null,
+            ),
+            const SizedBox(width: 8),
+            _buildNavButton(
+              icon: Icons.chevron_right,
+              onPressed: _currentPage < 3 ? () => _changePage(_currentPage + 1) : null,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildNavButton({required IconData icon, VoidCallback? onPressed}) {
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: onPressed != null 
+            ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
+            : AppTheme.getTextSecondary(context).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: onPressed != null 
+              ? const Color(0xFF3B82F6).withValues(alpha: 0.2)
+              : AppTheme.getTextSecondary(context).withValues(alpha: 0.2),
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(8),
+          onTap: onPressed,
+          child: Icon(
+            icon,
+            size: 18,
+            color: onPressed != null 
+                ? const Color(0xFF3B82F6)
+                : AppTheme.getTextSecondary(context).withValues(alpha: 0.5),
+          ),
+        ),
       ),
     );
   }
@@ -67,197 +201,167 @@ class ChartsGridSection extends StatelessWidget {
 
   // Layout para monitores extra grandes (1800px+)
   Widget _buildExtraLargeLayout() {
-    return Column(
-      children: [
-        // Fila 1: Gráfico hero + sidebar
-        Expanded(
-          flex: 3,
-          child: Row(
-            children: [
-              const Expanded(
-                flex: 3,
-                child: StaticChartCard(
-                  title: "Crecimiento de Pacientes",
-                  chart: PatientGrowthChart(),
-                  isHero: true,
-                ),
+    switch (_currentPage) {
+      case 0:
+        // Página 1: Distribución por edades + Tipos de tratamiento
+        return Row(
+          children: [
+            const Expanded(
+              child: StaticChartCard(
+                title: "Distribución por Edades",
+                chart: AgeDistributionChart(),
+                isHero: true,
               ),
-              const SizedBox(width: 20),
-              const Expanded(
-                child: StaticChartCard(
-                  title: "Tipos de Tratamiento",
-                  chart: TreatmentTypesChart(),
-                ),
+            ),
+            const SizedBox(width: 20),
+            const Expanded(
+              child: StaticChartCard(
+                title: "Tipos de Tratamiento",
+                chart: TreatmentTypesChart(),
+                isHero: true,
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        
-        // Fila 2: 4 gráficos en línea
-        Expanded(
-          flex: 2,
-          child: Row(
-            children: [
-              const Expanded(
-                child: StaticChartCard(
-                  title: "Distribución por Edades",
-                  chart: AgeDistributionChart(),
-                ),
-              ),
-              const SizedBox(width: 16),
-              const Expanded(
-                child: NextAppointmentsCard(),
-              ),
-              const SizedBox(width: 16),
-              const Expanded(
-                child: StaticChartCard(
-                  title: "Asistencia Semanal",
-                  chart: WeeklyAttendanceChart(),
-                ),
-              ),
-              const SizedBox(width: 16),
-              const Expanded(
-                child: TreatmentAlertCard(),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+            ),
+          ],
+        );
+      case 1:
+        // Página 2: Próximas citas + Alertas pendientes
+        return Row(
+          children: [
+            const Expanded(
+              child: NextAppointmentsCard(),
+            ),
+            const SizedBox(width: 20),
+            const Expanded(
+              child: TreatmentAlertCard(),
+            ),
+          ],
+        );
+      case 2:
+        // Página 3: Asistencia semanal
+        return const StaticChartCard(
+          title: "Asistencia Semanal",
+          chart: WeeklyAttendanceChart(),
+          isHero: true,
+        );
+      case 3:
+      default:
+        // Página 4: Crecimiento de pacientes
+        return const StaticChartCard(
+          title: "Crecimiento de Pacientes",
+          chart: PatientGrowthChart(),
+          isHero: true,
+        );
+    }
   }
 
   // Layout para pantallas grandes (1400-1800px)
   Widget _buildLargeLayout() {
-    return Column(
-      children: [
-        // Fila 1: Hero + Info cards
-        Expanded(
-          flex: 3,
-          child: Row(
-            children: [
-              const Expanded(
-                flex: 2,
-                child: StaticChartCard(
-                  title: "Crecimiento de Pacientes",
-                  chart: PatientGrowthChart(),
-                  isHero: true,
-                ),
+    switch (_currentPage) {
+      case 0:
+        // Página 1: Distribución por edades + Tipos de tratamiento
+        return Row(
+          children: [
+            const Expanded(
+              child: StaticChartCard(
+                title: "Distribución por Edades",
+                chart: AgeDistributionChart(),
+                isHero: true,
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  children: [
-                    const Expanded(
-                      child: StaticChartCard(
-                        title: "Tipos de Tratamiento",
-                        chart: TreatmentTypesChart(),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    const Expanded(
-                      child: TreatmentAlertCard(),
-                    ),
-                  ],
-                ),
+            ),
+            const SizedBox(width: 16),
+            const Expanded(
+              child: StaticChartCard(
+                title: "Tipos de Tratamiento",
+                chart: TreatmentTypesChart(),
+                isHero: true,
               ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        
-        // Fila 2: 3 gráficos
-        Expanded(
-          flex: 2,
-          child: Row(
-            children: [
-              const Expanded(
-                child: StaticChartCard(
-                  title: "Distribución por Edades",
-                  chart: AgeDistributionChart(),
-                ),
-              ),
-              const SizedBox(width: 16),
-              const Expanded(
-                child: NextAppointmentsCard(),
-              ),
-              const SizedBox(width: 16),
-              const Expanded(
-                child: StaticChartCard(
-                  title: "Asistencia Semanal",
-                  chart: WeeklyAttendanceChart(),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+            ),
+          ],
+        );
+      case 1:
+        // Página 2: Próximas citas + Alertas pendientes
+        return Row(
+          children: [
+            const Expanded(
+              child: NextAppointmentsCard(),
+            ),
+            const SizedBox(width: 16),
+            const Expanded(
+              child: TreatmentAlertCard(),
+            ),
+          ],
+        );
+      case 2:
+        // Página 3: Asistencia semanal
+        return const StaticChartCard(
+          title: "Asistencia Semanal",
+          chart: WeeklyAttendanceChart(),
+          isHero: true,
+        );
+      case 3:
+      default:
+        // Página 4: Crecimiento de pacientes
+        return const StaticChartCard(
+          title: "Crecimiento de Pacientes",
+          chart: PatientGrowthChart(),
+          isHero: true,
+        );
+    }
   }
 
   // Layout para notebooks medianos (1100-1400px)
   Widget _buildMediumLayout() {
-    return Column(
-      children: [
-        // Fila 1: Gráfico principal
-        Expanded(
-          flex: 2,
-          child: const StaticChartCard(
-            title: "Crecimiento de Pacientes",
-            chart: PatientGrowthChart(),
-            isHero: true,
-          ),
-        ),
-        const SizedBox(height: 12),
-        
-        // Fila 2: 2 gráficos + 1 tarjeta info
-        Expanded(
-          flex: 2,
-          child: Row(
-            children: [
-              const Expanded(
-                child: StaticChartCard(
-                  title: "Distribución por Edades",
-                  chart: AgeDistributionChart(),
-                ),
+    switch (_currentPage) {
+      case 0:
+        // Página 1: Distribución por edades + Tipos de tratamiento
+        return Column(
+          children: [
+            const Expanded(
+              child: StaticChartCard(
+                title: "Distribución por Edades",
+                chart: AgeDistributionChart(),
+                isHero: true,
               ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: StaticChartCard(
-                  title: "Tipos de Tratamiento",
-                  chart: TreatmentTypesChart(),
-                ),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: StaticChartCard(
+                title: "Tipos de Tratamiento",
+                chart: TreatmentTypesChart(),
+                isHero: true,
               ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: NextAppointmentsCard(),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 12),
-        
-        // Fila 3: 1 gráfico + 1 tarjeta
-        Expanded(
-          flex: 2,
-          child: Row(
-            children: [
-              const Expanded(
-                flex: 2,
-                child: StaticChartCard(
-                  title: "Asistencia Semanal",
-                  chart: WeeklyAttendanceChart(),
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: TreatmentAlertCard(),
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+            ),
+          ],
+        );
+      case 1:
+        // Página 2: Próximas citas + Alertas pendientes
+        return Row(
+          children: [
+            const Expanded(
+              child: NextAppointmentsCard(),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: TreatmentAlertCard(),
+            ),
+          ],
+        );
+      case 2:
+        // Página 3: Asistencia semanal
+        return const StaticChartCard(
+          title: "Asistencia Semanal",
+          chart: WeeklyAttendanceChart(),
+          isHero: true,
+        );
+      case 3:
+      default:
+        // Página 4: Crecimiento de pacientes
+        return const StaticChartCard(
+          title: "Crecimiento de Pacientes",
+          chart: PatientGrowthChart(),
+          isHero: true,
+        );
+    }
   }
 
   // Layout compacto para notebooks pequeños (<1100px)
@@ -265,65 +369,65 @@ class ChartsGridSection extends StatelessWidget {
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Gráfico principal - altura fija
           SizedBox(
-            height: 280,
-            child: const StaticChartCard(
-              title: "Crecimiento de Pacientes",
-              chart: PatientGrowthChart(),
-              isHero: true,
-            ),
-          ),
-          const SizedBox(height: 12),
-          
-          // Fila de 3 gráficos compactos
-          SizedBox(
-            height: 220,
-            child: Row(
-              children: [
-                const Expanded(
-                  child: StaticChartCard(
-                    title: "Edades",
-                    chart: AgeDistributionChart(),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                const Expanded(
-                  child: StaticChartCard(
-                    title: "Tratamientos",
-                    chart: TreatmentTypesChart(),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                const Expanded(
-                  child: StaticChartCard(
-                    title: "Asistencias",
-                    chart: WeeklyAttendanceChart(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          
-          // Tarjetas de información - compactas
-          SizedBox(
-            height: 200,
-            child: Row(
-              children: [
-                const Expanded(
-                  child: CompactAppointmentsCard(),
-                ),
-                const SizedBox(width: 10),
-                const Expanded(
-                  child: CompactAlertsCard(),
-                ),
-              ],
-            ),
+            height: 240,
+            child: _getCompactPageContent(),
           ),
         ],
       ),
     );
+  }
+
+  Widget _getCompactPageContent() {
+    switch (_currentPage) {
+      case 0:
+        // Página 1: Distribución por edades + Tipos de tratamiento
+        return Row(
+          children: [
+            const Expanded(
+              child: StaticChartCard(
+                title: "Edades",
+                chart: AgeDistributionChart(),
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: StaticChartCard(
+                title: "Tratamientos",
+                chart: TreatmentTypesChart(),
+              ),
+            ),
+          ],
+        );
+      case 1:
+        // Página 2: Próximas citas + Alertas pendientes
+        return Row(
+          children: [
+            const Expanded(
+              child: CompactAppointmentsCard(),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: CompactAlertsCard(),
+            ),
+          ],
+        );
+      case 2:
+        // Página 3: Asistencia semanal
+        return const StaticChartCard(
+          title: "Asistencia Semanal",
+          chart: WeeklyAttendanceChart(),
+          isHero: true,
+        );
+      case 3:
+      default:
+        // Página 4: Crecimiento de pacientes
+        return const StaticChartCard(
+          title: "Crecimiento de Pacientes",
+          chart: PatientGrowthChart(),
+          isHero: true,
+        );
+    }
   }
 }
 
@@ -334,7 +438,7 @@ class CompactAppointmentsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: AppTheme.getSurfaceColor(context),
         borderRadius: BorderRadius.circular(12),
@@ -350,33 +454,40 @@ class CompactAppointmentsCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             'Próximas Citas',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: FontWeight.w600,
               color: AppTheme.getTextPrimary(context),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           
-          Expanded(
-            child: ListView(
-              children: [
-                _buildCompactItem("09:30", "Ana García"),
-                _buildCompactItem("10:15", "Carlos López"),
-                _buildCompactItem("14:30", "Pedro Ruiz"),
-              ],
+          Flexible(
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: const ClampingScrollPhysics(),
+              itemCount: 3,
+              itemBuilder: (context, index) {
+                final items = [
+                  ("09:30", "Ana García"),
+                  ("10:15", "Carlos López"),
+                  ("14:30", "Pedro Ruiz"),
+                ];
+                return _buildCompactItem(items[index].$1, items[index].$2);
+              },
             ),
           ),
           
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Center(
             child: Text(
               'Ver todas →',
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 10,
                 color: const Color(0xFF3B82F6),
                 fontWeight: FontWeight.w500,
               ),
@@ -389,20 +500,20 @@ class CompactAppointmentsCard extends StatelessWidget {
 
   Widget _buildCompactItem(String time, String patient) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
           SizedBox(
-            width: 40,
+            width: 35,
             child: Text(
               time,
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
             ),
           ),
           Expanded(
             child: Text(
               patient,
-              style: const TextStyle(fontSize: 11),
+              style: const TextStyle(fontSize: 10),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -419,7 +530,7 @@ class CompactAlertsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: AppTheme.getSurfaceColor(context),
         borderRadius: BorderRadius.circular(12),
@@ -435,33 +546,40 @@ class CompactAlertsCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             'Alertas Pendientes',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 13,
               fontWeight: FontWeight.w600,
               color: AppTheme.getTextPrimary(context),
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           
-          Expanded(
-            child: ListView(
-              children: [
-                _buildCompactAlert("2d", "Juan Pérez"),
-                _buildCompactAlert("5d", "Elena Torres"),
-                _buildCompactAlert("1d", "Miguel Santos"),
-              ],
+          Flexible(
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: const ClampingScrollPhysics(),
+              itemCount: 3,
+              itemBuilder: (context, index) {
+                final items = [
+                  ("2d", "Juan Pérez"),
+                  ("5d", "Elena Torres"),
+                  ("1d", "Miguel Santos"),
+                ];
+                return _buildCompactAlert(items[index].$1, items[index].$2);
+              },
             ),
           ),
           
-          const SizedBox(height: 8),
+          const SizedBox(height: 6),
           Center(
             child: Text(
               'Ver todas →',
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 10,
                 color: const Color(0xFF3B82F6),
                 fontWeight: FontWeight.w500,
               ),
@@ -474,20 +592,20 @@ class CompactAlertsCard extends StatelessWidget {
 
   Widget _buildCompactAlert(String days, String patient) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
           SizedBox(
-            width: 25,
+            width: 20,
             child: Text(
               days,
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
             ),
           ),
           Expanded(
             child: Text(
               patient,
-              style: const TextStyle(fontSize: 11),
+              style: const TextStyle(fontSize: 10),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -538,49 +656,62 @@ class StaticChartCard extends StatelessWidget {
             offset: Offset(0, isHero ? 8 : 4),
           ),
         ],
-        border: isHero ? null : null,
       ),
       child: Padding(
-        padding: EdgeInsets.all(isHero ? 24 : 16),
+        padding: EdgeInsets.all(isHero ? 20 : 12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
           children: [
             // Header estático
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: isHero ? 18 : 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.getTextPrimary(context),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (subtitle != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle!,
+                Flexible(
+                  child: Text(
+                    title,
                     style: TextStyle(
-                      fontSize: isHero ? 12 : 10,
-                      color: AppTheme.getTextSecondary(context),
+                      fontSize: isHero ? 16 : 12,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.getTextPrimary(context),
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 2),
+                  Flexible(
+                    child: Text(
+                      subtitle!,
+                      style: TextStyle(
+                        fontSize: isHero ? 11 : 9,
+                        color: AppTheme.getTextSecondary(context),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ],
             ),
             
-            SizedBox(height: isHero ? 20 : 12),
+            SizedBox(height: isHero ? 16 : 8),
             
-            // Chart container - AQUÍ está la animación del contenido
-            Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: chart, // Solo el gráfico se anima internamente
+            // Chart container
+            Flexible(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SizedBox(
+                    width: constraints.maxWidth,
+                    height: constraints.maxHeight,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: chart,
+                    ),
+                  );
+                },
               ),
             ),
           ],
