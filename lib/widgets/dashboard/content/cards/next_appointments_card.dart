@@ -150,7 +150,7 @@ class NextAppointmentsCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Hora
-          Container(
+          SizedBox(
             width: 45,
             child: Text(
               appointment.time,

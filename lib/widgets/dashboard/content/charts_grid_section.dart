@@ -641,21 +641,11 @@ class StaticChartCard extends StatelessWidget {
           colors: isHero ? [
             AppTheme.getSurfaceColor(context),
             AppTheme.getSurfaceColor(context).withValues(alpha: 0.95),
-            const Color(0xFF3B82F6).withValues(alpha: 0.05),
           ] : [
             AppTheme.getSurfaceColor(context),
             AppTheme.getSurfaceColor(context).withValues(alpha: 0.9),
           ],
         ),
-        boxShadow: [
-          BoxShadow(
-            color: isHero 
-                ? const Color(0xFF3B82F6).withValues(alpha: 0.15)
-                : Colors.grey.withValues(alpha: 0.1),
-            blurRadius: isHero ? 20 : 10,
-            offset: Offset(0, isHero ? 8 : 4),
-          ),
-        ],
       ),
       child: Padding(
         padding: EdgeInsets.all(isHero ? 20 : 12),

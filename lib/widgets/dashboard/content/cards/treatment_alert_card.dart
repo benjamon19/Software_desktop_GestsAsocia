@@ -120,7 +120,7 @@ class TreatmentAlertCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Días
-          Container(
+          SizedBox(
             width: 25,
             child: Text(
               '${alert.daysOverdue}d',
