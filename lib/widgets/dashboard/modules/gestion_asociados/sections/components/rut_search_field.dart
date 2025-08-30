@@ -47,22 +47,13 @@ class _RutSearchFieldState extends State<RutSearchField> {
           onPressed: widget.isLoading || _rutController.text.trim().isEmpty 
               ? null 
               : _handleSearch,
-          icon: widget.isLoading
-              ? SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryColor),
-                  ),
-                )
-              : Icon(
-                  Icons.search,
-                  color: _rutController.text.trim().isEmpty 
-                      ? AppTheme.getTextSecondary(context)
-                      : AppTheme.primaryColor,
-                  size: 20,
-                ),
+          icon: Icon(
+            Icons.search,
+            color: _rutController.text.trim().isEmpty 
+                ? AppTheme.getTextSecondary(context)
+                : AppTheme.primaryColor,
+            size: 20,
+          ),
           tooltip: 'Buscar exacto',
         ),
         filled: true,

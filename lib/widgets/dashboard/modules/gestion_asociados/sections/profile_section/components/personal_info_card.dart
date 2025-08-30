@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../../../../../utils/app_theme.dart';
+import '../../../../../../../controllers/asociados_controller.dart';
 
 class PersonalInfoCard extends StatelessWidget {
   final Map<String, dynamic> asociado;
@@ -11,6 +13,9 @@ class PersonalInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Obtener el controller para reaccionar a cambios
+    final AsociadosController controller = Get.find<AsociadosController>();
+    
     return Padding(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -18,7 +23,14 @@ class PersonalInfoCard extends StatelessWidget {
         children: [
           _buildSectionTitle(context),
           const SizedBox(height: 20),
-          _buildInfoGrid(context),
+          // Hacer reactiva la información personal
+          Obx(() {
+            final currentAsociado = controller.selectedAsociado.value;
+            if (currentAsociado == null) {
+              return const SizedBox();
+            }
+            return _buildInfoGrid(context, currentAsociado);
+          }),
         ],
       ),
     );
@@ -52,7 +64,7 @@ class PersonalInfoCard extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoGrid(BuildContext context) {
+  Widget _buildInfoGrid(BuildContext context, dynamic currentAsociado) {
     return Column(
       children: [
         // Primera fila: Email y Teléfono
@@ -62,7 +74,7 @@ class PersonalInfoCard extends StatelessWidget {
               child: _buildInfoItem(
                 context,
                 'Email',
-                asociado['email'] ?? 'No especificado',
+                currentAsociado.email,
                 Icons.email_outlined,
                 AppTheme.primaryColor,
               ),
@@ -72,7 +84,7 @@ class PersonalInfoCard extends StatelessWidget {
               child: _buildInfoItem(
                 context,
                 'Teléfono',
-                asociado['telefono'] ?? 'No especificado',
+                currentAsociado.telefono,
                 Icons.phone_outlined,
                 Colors.green,
               ),
@@ -89,7 +101,7 @@ class PersonalInfoCard extends StatelessWidget {
               child: _buildInfoItem(
                 context,
                 'Fecha de Nacimiento',
-                asociado['fechaNacimiento'] ?? 'No especificado',
+                currentAsociado.fechaNacimientoFormateada,
                 Icons.cake_outlined,
                 Colors.orange,
               ),
@@ -99,7 +111,7 @@ class PersonalInfoCard extends StatelessWidget {
               child: _buildInfoItem(
                 context,
                 'Estado Civil',
-                asociado['estadoCivil'] ?? 'No especificado',
+                currentAsociado.estadoCivil,
                 Icons.favorite_outline,
                 Colors.purple,
               ),
@@ -113,7 +125,7 @@ class PersonalInfoCard extends StatelessWidget {
         _buildInfoItem(
           context,
           'Dirección',
-          asociado['direccion'] ?? 'No especificado',
+          currentAsociado.direccion,
           Icons.location_on_outlined,
           Colors.blue,
         ),
@@ -127,9 +139,9 @@ class PersonalInfoCard extends StatelessWidget {
               child: _buildInfoItem(
                 context,
                 'Plan de Membresía',
-                _getPlanDisplay(asociado['plan']),
+                _getPlanDisplay(currentAsociado.plan),
                 Icons.card_membership_outlined,
-                _getPlanColor(asociado['plan']),
+                _getPlanColor(currentAsociado.plan),
               ),
             ),
             const SizedBox(width: 16),
@@ -137,7 +149,7 @@ class PersonalInfoCard extends StatelessWidget {
               child: _buildInfoItem(
                 context,
                 'Fecha de Ingreso',
-                asociado['fechaIngreso'] ?? 'No especificado',
+                currentAsociado.fechaIngresoFormateada,
                 Icons.calendar_today_outlined,
                 Colors.teal,
               ),
@@ -158,13 +170,7 @@ class PersonalInfoCard extends StatelessWidget {
           color: AppTheme.getBorderLight(context).withValues(alpha: 0.5),
           width: 1,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: iconColor.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        // Bordes luminosos eliminados
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,7 +209,7 @@ class PersonalInfoCard extends StatelessWidget {
           
           // Valor
           Text(
-            value,
+            value.isEmpty ? 'No especificado' : value,
             style: TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.w600,

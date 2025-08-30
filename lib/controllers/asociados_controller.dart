@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/asociado.dart';
 import '../widgets/dashboard/modules/gestion_asociados/shared/dialogs/new_asociado_dialog.dart';
+import '../widgets/dashboard/modules/gestion_asociados/shared/dialogs/edit_asociado_dialog.dart';
+import '../widgets/dashboard/modules/gestion_asociados/shared/dialogs/new_carga_familiar_dialog.dart';
 
 class AsociadosController extends GetxController {
   // Variables observables
@@ -208,10 +210,13 @@ class AsociadosController extends GetxController {
         asociados[index] = asociado;
       }
 
-      // Actualizar el seleccionado si es el mismo
-      if (selectedAsociado.value?.id == asociado.id) {
-        selectedAsociado.value = asociado;
-      }
+      // FORZAR actualización del UI - ESTO ES CLAVE
+      selectedAsociado.value = null; // Limpiar primero
+      await Future.delayed(const Duration(milliseconds: 50)); // Breve pausa
+      selectedAsociado.value = asociado; // Asignar el actualizado
+
+      // También forzar refresh de la lista
+      asociados.refresh();
 
       _showSuccessSnackbar("¡Éxito!", "Asociado actualizado correctamente");
       return true;
@@ -316,21 +321,38 @@ class AsociadosController extends GetxController {
     }
   }
 
-  // Métodos para acciones (por implementar después)
+  // ========== MÉTODOS ACTUALIZADOS PARA ABRIR DIALOGS ==========
+
+  // Método para editar asociado - ACTUALIZADO
   void editAsociado() {
-    Get.snackbar(
-      'Editar Asociado', 
-      'Función para editar asociado (próximamente)',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    if (selectedAsociado.value != null) {
+      final context = Get.context;
+      if (context != null) {
+        EditAsociadoDialog.show(context, selectedAsociado.value!);
+      } else {
+        _showErrorSnackbar("Error", "No se pudo abrir el formulario de edición");
+      }
+    } else {
+      _showErrorSnackbar("Error", "No hay asociado seleccionado para editar");
+    }
   }
 
+  // Método para agregar carga familiar - ACTUALIZADO
   void addCarga() {
-    Get.snackbar(
-      'Agregar Carga', 
-      'Función para agregar carga familiar (próximamente)',
-      snackPosition: SnackPosition.BOTTOM,
-    );
+    if (selectedAsociado.value != null) {
+      final context = Get.context;
+      if (context != null) {
+        NewCargaFamiliarDialog.show(
+          context, 
+          selectedAsociado.value!.id ?? '',
+          selectedAsociado.value!.nombreCompleto,
+        );
+      } else {
+        _showErrorSnackbar("Error", "No se pudo abrir el formulario de carga familiar");
+      }
+    } else {
+      _showErrorSnackbar("Error", "No hay asociado seleccionado para agregar carga familiar");
+    }
   }
 
   void viewHistory() {

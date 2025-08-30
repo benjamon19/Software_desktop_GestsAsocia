@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../../../../../utils/app_theme.dart';
+import '../../../../../../../controllers/asociados_controller.dart';
 
 class ProfileHeader extends StatelessWidget {
   final Map<String, dynamic> asociado;
@@ -15,6 +17,9 @@ class ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Obtener el controller para reaccionar a cambios
+    final AsociadosController controller = Get.find<AsociadosController>();
+    
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -49,32 +54,33 @@ class ProfileHeader extends StatelessWidget {
           
           const SizedBox(height: 8),
           
-          // Información principal del asociado
-          Row(
-            children: [
-              // Avatar mejorado
-              _buildAvatar(),
-              
-              const SizedBox(width: 20),
-              
-              // Información básica
-              Expanded(
-                child: _buildBasicInfo(),
-              ),
-            ],
-          ),
+          // Información principal del asociado - AHORA REACTIVA
+          Obx(() {
+            final currentAsociado = controller.selectedAsociado.value;
+            if (currentAsociado == null) {
+              return const SizedBox(); // Si no hay asociado, no mostrar nada
+            }
+            
+            return Row(
+              children: [
+                // Avatar simple: solo icono de persona
+                _buildAvatar(),
+                
+                const SizedBox(width: 20),
+                
+                // Información básica
+                Expanded(
+                  child: _buildBasicInfo(currentAsociado),
+                ),
+              ],
+            );
+          }),
         ],
       ),
     );
   }
 
   Widget _buildAvatar() {
-    // Obtener iniciales del nombre
-    String initials = '';
-    if (asociado['nombre'] != null && asociado['apellido'] != null) {
-      initials = '${asociado['nombre'][0]}${asociado['apellido'][0]}'.toUpperCase();
-    }
-
     return Container(
       width: 90,
       height: 90,
@@ -93,32 +99,21 @@ class ProfileHeader extends StatelessWidget {
           ),
         ],
       ),
-      child: initials.isNotEmpty
-          ? Center(
-              child: Text(
-                initials,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            )
-          : Icon(
-              Icons.person,
-              size: 45,
-              color: Colors.white.withValues(alpha: 0.9),
-            ),
+      child: Icon(
+        Icons.person,
+        size: 50,
+        color: Colors.white.withValues(alpha: 0.9),
+      ),
     );
   }
 
-  Widget _buildBasicInfo() {
+  Widget _buildBasicInfo(dynamic currentAsociado) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Nombre completo
         Text(
-          '${asociado['nombre'] ?? ''} ${asociado['apellido'] ?? ''}'.trim(),
+          currentAsociado.nombreCompleto,
           style: const TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.bold,
@@ -139,7 +134,7 @@ class ProfileHeader extends StatelessWidget {
             borderRadius: BorderRadius.circular(6),
           ),
           child: Text(
-            'RUT: ${asociado['rut'] ?? 'N/A'}',
+            'RUT: ${currentAsociado.rut}',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.w500,
@@ -153,17 +148,16 @@ class ProfileHeader extends StatelessWidget {
         // Fila con estado y plan
         Row(
           children: [
-            _buildStatusBadge(),
+            _buildStatusBadge(currentAsociado.estado),
             const SizedBox(width: 12),
-            _buildPlanBadge(),
+            _buildPlanBadge(currentAsociado.plan),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildStatusBadge() {
-    String status = asociado['estado'] ?? 'Activo';
+  Widget _buildStatusBadge(String status) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
@@ -202,8 +196,7 @@ class ProfileHeader extends StatelessWidget {
     );
   }
 
-  Widget _buildPlanBadge() {
-    String plan = asociado['plan'] ?? 'Básico';
+  Widget _buildPlanBadge(String plan) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
