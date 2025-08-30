@@ -84,7 +84,7 @@ class _ProfileSectionState extends State<ProfileSection> {
                       PersonalInfoCard(asociado: _asociadoToMap(currentAsociado)),
                       
                       // Cargas familiares - REACTIVA
-                      FamilyChargesCard(asociado: _asociadoToMap(currentAsociado)),
+                      FamilyChargesCard(asociado: currentAsociado),
                     ],
                   );
                 }),

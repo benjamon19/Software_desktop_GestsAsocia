@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:gestasocia/utils/app_theme.dart';
 import '../../../../../../controllers/asociados_controller.dart';
@@ -21,218 +22,250 @@ class EditAsociadoDialog {
     final selectedDate = Rxn<DateTime>(asociado.fechaNacimiento);
     final isLoading = false.obs;
 
+    // Función para actualizar asociado
+    Future<void> updateAsociadoAction() async {
+      // Validar campos requeridos
+      if (_validateFields(
+        nombreController.text,
+        apellidoController.text,
+        emailController.text,
+        telefonoController.text,
+        direccionController.text,
+      )) {
+        isLoading.value = true;
+        
+        // Crear asociado actualizado
+        final asociadoActualizado = asociado.copyWith(
+          nombre: nombreController.text.trim(),
+          apellido: apellidoController.text.trim(),
+          email: emailController.text.trim(),
+          telefono: telefonoController.text.trim(),
+          direccion: direccionController.text.trim(),
+          estadoCivil: selectedEstadoCivil.value,
+          plan: selectedPlan.value,
+          fechaNacimiento: selectedDate.value ?? asociado.fechaNacimiento,
+        );
+        
+        final success = await controller.updateAsociado(asociadoActualizado);
+        
+        isLoading.value = false;
+        
+        if (success && context.mounted) {
+          // Forzar actualización inmediata del UI
+          controller.selectedAsociado.refresh();
+          // También actualizar la búsqueda para forzar refresh
+          controller.searchQuery.refresh();
+          Navigator.of(context).pop();
+        }
+      }
+    }
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppTheme.getSurfaceColor(context),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        title: Row(
-          children: [
-            const Icon(
-              Icons.edit,
-              color: Color(0xFF3B82F6),
-              size: 28,
-            ),
-            const SizedBox(width: 12),
-            Text(
-              'Editar Asociado',
-              style: TextStyle(
-                color: AppTheme.getTextPrimary(context),
-                fontWeight: FontWeight.bold,
+      builder: (context) => Focus(
+        autofocus: true,
+        onKeyEvent: (node, event) {
+          // Manejar teclas ESC y Enter
+          if (event is KeyDownEvent) {
+            if (event.logicalKey == LogicalKeyboardKey.escape) {
+              if (!isLoading.value) {
+                Navigator.of(context).pop();
+              }
+              return KeyEventResult.handled;
+            } else if (event.logicalKey == LogicalKeyboardKey.enter) {
+              if (!isLoading.value) {
+                updateAsociadoAction();
+              }
+              return KeyEventResult.handled;
+            }
+          }
+          return KeyEventResult.ignored;
+        },
+        child: AlertDialog(
+          backgroundColor: AppTheme.getSurfaceColor(context),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: Row(
+            children: [
+              const Icon(
+                Icons.edit,
+                color: Color(0xFF3B82F6),
+                size: 28,
               ),
-            ),
-          ],
-        ),
-        content: SizedBox(
-          width: 500,
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Mostrar RUT (solo lectura)
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: AppTheme.getInputBackground(context),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: AppTheme.getBorderLight(context)),
+              const SizedBox(width: 12),
+              Text(
+                'Editar Asociado',
+                style: TextStyle(
+                  color: AppTheme.getTextPrimary(context),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                'ESC para cancelar • Enter para actualizar',
+                style: TextStyle(
+                  color: AppTheme.getTextSecondary(context),
+                  fontSize: 12,
+                  fontWeight: FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: 500,
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Mostrar RUT (solo lectura)
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.getInputBackground(context),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: AppTheme.getBorderLight(context)),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.badge, color: AppTheme.primaryColor),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'RUT (No editable)',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppTheme.getTextSecondary(context),
+                              ),
+                            ),
+                            Text(
+                              asociado.rut,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.getTextPrimary(context),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Row(
+                  
+                  const SizedBox(height: 20),
+                  
+                  // Información Personal
+                  Text(
+                    'Información Personal',
+                    style: TextStyle(
+                      color: AppTheme.getTextPrimary(context),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  Row(
                     children: [
-                      Icon(Icons.badge, color: AppTheme.primaryColor),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'RUT (No editable)',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: AppTheme.getTextSecondary(context),
-                            ),
-                          ),
-                          Text(
-                            asociado.rut,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.getTextPrimary(context),
-                            ),
-                          ),
-                        ],
-                      ),
+                      Expanded(child: _buildTextField(context, 'Nombre', Icons.person, nombreController)),
+                      const SizedBox(width: 16),
+                      Expanded(child: _buildTextField(context, 'Apellido', Icons.person_outline, apellidoController)),
                     ],
                   ),
-                ),
-                
-                const SizedBox(height: 20),
-                
-                // Información Personal
-                Text(
-                  'Información Personal',
-                  style: TextStyle(
-                    color: AppTheme.getTextPrimary(context),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                  const SizedBox(height: 16),
+                  
+                  Row(
+                    children: [
+                      Expanded(child: _buildDatePicker(context, selectedDate, 'Fecha de Nacimiento')),
+                      const SizedBox(width: 16),
+                      Expanded(child: Obx(() => _buildDropdown(
+                        context, 
+                        'Estado Civil', 
+                        ['Soltero', 'Casado', 'Divorciado', 'Viudo'], 
+                        Icons.favorite,
+                        selectedEstadoCivil,
+                      ))),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 16),
-                
-                Row(
-                  children: [
-                    Expanded(child: _buildTextField(context, 'Nombre', Icons.person, nombreController)),
-                    const SizedBox(width: 16),
-                    Expanded(child: _buildTextField(context, 'Apellido', Icons.person_outline, apellidoController)),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                
-                Row(
-                  children: [
-                    Expanded(child: _buildDatePicker(context, selectedDate, 'Fecha de Nacimiento')),
-                    const SizedBox(width: 16),
-                    Expanded(child: Obx(() => _buildDropdown(
-                      context, 
-                      'Estado Civil', 
-                      ['Soltero', 'Casado', 'Divorciado', 'Viudo'], 
-                      Icons.favorite,
-                      selectedEstadoCivil,
-                    ))),
-                  ],
-                ),
-                
-                const SizedBox(height: 24),
-                
-                // Información de Contacto
-                Text(
-                  'Información de Contacto',
-                  style: TextStyle(
-                    color: AppTheme.getTextPrimary(context),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Información de Contacto
+                  Text(
+                    'Información de Contacto',
+                    style: TextStyle(
+                      color: AppTheme.getTextPrimary(context),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                
-                _buildTextField(context, 'Email', Icons.email, emailController),
-                const SizedBox(height: 16),
-                _buildTextField(context, 'Teléfono', Icons.phone, telefonoController),
-                const SizedBox(height: 16),
-                _buildTextField(context, 'Dirección', Icons.location_on, direccionController),
-                
-                const SizedBox(height: 24),
-                
-                // Plan
-                Text(
-                  'Plan de Membresía',
-                  style: TextStyle(
-                    color: AppTheme.getTextPrimary(context),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                  const SizedBox(height: 16),
+                  
+                  _buildTextField(context, 'Email', Icons.email, emailController),
+                  const SizedBox(height: 16),
+                  _buildTextField(context, 'Teléfono', Icons.phone, telefonoController),
+                  const SizedBox(height: 16),
+                  _buildTextField(context, 'Dirección', Icons.location_on, direccionController),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Plan
+                  Text(
+                    'Plan de Membresía',
+                    style: TextStyle(
+                      color: AppTheme.getTextPrimary(context),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                
-                Obx(() => _buildDropdown(
-                  context, 
-                  'Plan', 
-                  ['Básico', 'Premium', 'VIP', 'Empresarial'], 
-                  Icons.card_membership,
-                  selectedPlan,
-                )),
-              ],
-            ),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: isLoading.value ? null : () => Navigator.of(context).pop(),
-            child: Text(
-              'Cancelar',
-              style: TextStyle(
-                color: AppTheme.getTextSecondary(context),
+                  const SizedBox(height: 16),
+                  
+                  Obx(() => _buildDropdown(
+                    context, 
+                    'Plan', 
+                    ['Básico', 'Premium', 'VIP', 'Empresarial'], 
+                    Icons.card_membership,
+                    selectedPlan,
+                  )),
+                ],
               ),
             ),
           ),
-          Obx(() => ElevatedButton(
-            onPressed: isLoading.value ? null : () async {
-              // Validar campos requeridos
-              if (_validateFields(
-                nombreController.text,
-                apellidoController.text,
-                emailController.text,
-                telefonoController.text,
-                direccionController.text,
-              )) {
-                isLoading.value = true;
-                
-                // Crear asociado actualizado
-                final asociadoActualizado = asociado.copyWith(
-                  nombre: nombreController.text.trim(),
-                  apellido: apellidoController.text.trim(),
-                  email: emailController.text.trim(),
-                  telefono: telefonoController.text.trim(),
-                  direccion: direccionController.text.trim(),
-                  estadoCivil: selectedEstadoCivil.value,
-                  plan: selectedPlan.value,
-                  fechaNacimiento: selectedDate.value ?? asociado.fechaNacimiento,
-                );
-                
-                final success = await controller.updateAsociado(asociadoActualizado);
-                
-                isLoading.value = false;
-                
-                if (success && context.mounted) {
-                  // Forzar actualización inmediata del UI
-                  controller.selectedAsociado.refresh();
-                  // También actualizar la búsqueda para forzar refresh
-                  controller.searchQuery.refresh();
-                  Navigator.of(context).pop();
-                }
-              }
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppTheme.primaryColor,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          actions: [
+            TextButton(
+              onPressed: isLoading.value ? null : () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancelar',
+                style: TextStyle(
+                  color: AppTheme.getTextSecondary(context),
+                ),
+              ),
             ),
-            child: isLoading.value 
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  ),
-                )
-              : const Text('Actualizar Asociado'),
-          )),
-        ],
+            Obx(() => ElevatedButton(
+              onPressed: isLoading.value ? null : updateAsociadoAction,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
+              child: isLoading.value 
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ),
+                  )
+                : const Text('Actualizar Asociado'),
+            )),
+          ],
+        ),
       ),
     );
   }

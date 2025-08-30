@@ -30,37 +30,29 @@ class AsociadosMainView extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: Obx(() => controller.hasSelectedAsociado
-          ? Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                FloatingActionButton(
-                  heroTag: "back",
-                  mini: true,
-                  onPressed: () => _goBackToList(controller),
-                  backgroundColor: Colors.grey[600],
-                  foregroundColor: Colors.white,
-                  tooltip: 'Volver a la lista',
-                  child: const Icon(Icons.arrow_back, size: 20),
-                ),
-                const SizedBox(width: 10),
-                FloatingActionButton(
-                  heroTag: "add",
-                  onPressed: controller.newAsociado,
-                  backgroundColor: AppTheme.primaryColor,
-                  foregroundColor: Colors.white,
-                  elevation: 8,
-                  child: const Icon(Icons.person_add, size: 24),
-                ),
-              ],
-            )
-          : FloatingActionButton(
-              onPressed: controller.newAsociado,
-              backgroundColor: AppTheme.primaryColor,
-              foregroundColor: Colors.white,
-              elevation: 8,
-              child: const Icon(Icons.person_add, size: 24),
-            )),
+      // CORREGIDO: Botón flotante condicional
+      floatingActionButton: Obx(() {
+        if (!controller.hasSelectedAsociado) {
+          // Vista principal: solo botón agregar
+          return FloatingActionButton(
+            onPressed: controller.newAsociado,
+            backgroundColor: AppTheme.primaryColor,
+            foregroundColor: Colors.white,
+            elevation: 8,
+            child: const Icon(Icons.person_add, size: 24),
+          );
+        } else {
+          // Vista de perfil: solo botón volver (mini)
+          return FloatingActionButton(
+            mini: true,
+            onPressed: () => _goBackToList(controller),
+            backgroundColor: Colors.grey[600],
+            foregroundColor: Colors.white,
+            tooltip: 'Volver a la lista',
+            child: const Icon(Icons.arrow_back, size: 20),
+          );
+        }
+      }),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
@@ -79,6 +71,8 @@ class AsociadosMainView extends StatelessWidget {
             child: ProfileSection(
               asociado: _asociadoToMap(controller.currentAsociado!),
               onEdit: controller.editAsociado,
+              // Agregar botón de volver en el header del perfil
+              onBack: () => _goBackToList(controller),
             ),
           ),
           const SizedBox(width: 20),

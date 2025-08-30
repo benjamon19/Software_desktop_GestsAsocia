@@ -170,7 +170,6 @@ class PersonalInfoCard extends StatelessWidget {
           color: AppTheme.getBorderLight(context).withValues(alpha: 0.5),
           width: 1,
         ),
-        // Bordes luminosos eliminados
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,22 +1,27 @@
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/asociado.dart';
+import '../models/carga_familiar.dart';
 import '../widgets/dashboard/modules/gestion_asociados/shared/dialogs/new_asociado_dialog.dart';
 import '../widgets/dashboard/modules/gestion_asociados/shared/dialogs/edit_asociado_dialog.dart';
 import '../widgets/dashboard/modules/gestion_asociados/shared/dialogs/new_carga_familiar_dialog.dart';
 
 class AsociadosController extends GetxController {
-  // Variables observables
+  // ========== VARIABLES OBSERVABLES ==========
   RxBool isLoading = false.obs;
   Rxn<Asociado> selectedAsociado = Rxn<Asociado>();
   RxString searchQuery = ''.obs;
   RxList<Asociado> asociados = <Asociado>[].obs;
+  RxList<CargaFamiliar> cargasFamiliares = <CargaFamiliar>[].obs;
 
   @override
   void onInit() {
     super.onInit();
     loadAsociados();
+    loadAllCargasFamiliares(); // ← NUEVO: Cargar todas las cargas al inicializar
   }
+
+  // ========== GESTIÓN DE ASOCIADOS ==========
 
   // Cargar todos los asociados
   Future<void> loadAsociados() async {
@@ -24,7 +29,6 @@ class AsociadosController extends GetxController {
       isLoading.value = true;
       Get.log('=== INICIANDO CARGA DE ASOCIADOS ===');
       
-      // Usar FirebaseFirestore directamente
       final QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('asociados')
           .get();
@@ -131,11 +135,12 @@ class AsociadosController extends GetxController {
     }
   }
 
-  // Buscar asociado por RUT
+  // MÉTODO MODIFICADO: Buscar asociado por RUT
   Future<void> searchAsociado(String rut) async {
     if (rut.isEmpty) {
       selectedAsociado.value = null;
       searchQuery.value = '';
+      // ✅ NO limpiar cargas aquí
       return;
     }
     
@@ -150,6 +155,12 @@ class AsociadosController extends GetxController {
 
       if (asociado != null) {
         selectedAsociado.value = asociado;
+        
+        // Cargar todas las cargas si no están cargadas
+        if (cargasFamiliares.isEmpty) {
+          await loadAllCargasFamiliares();
+        }
+        
         _showSuccessSnackbar("Encontrado", "Asociado encontrado: ${asociado.nombreCompleto}");
       } else {
         // Si no está en local, buscar en Firestore
@@ -173,9 +184,15 @@ class AsociadosController extends GetxController {
             asociados.add(asociadoEncontrado);
           }
           
+          // Cargar todas las cargas si no están cargadas
+          if (cargasFamiliares.isEmpty) {
+            await loadAllCargasFamiliares();
+          }
+          
           _showSuccessSnackbar("Encontrado", "Asociado encontrado: ${asociadoEncontrado.nombreCompleto}");
         } else {
           selectedAsociado.value = null;
+          // ✅ NO limpiar cargas
           _showErrorSnackbar("No encontrado", "No se encontró ningún asociado con RUT: $rut");
         }
       }
@@ -183,6 +200,7 @@ class AsociadosController extends GetxController {
       Get.log('Error buscando asociado: $e');
       _showErrorSnackbar("Error", "Error al buscar asociado");
       selectedAsociado.value = null;
+      // ✅ NO limpiar cargas
     } finally {
       isLoading.value = false;
     }
@@ -210,12 +228,10 @@ class AsociadosController extends GetxController {
         asociados[index] = asociado;
       }
 
-      // FORZAR actualización del UI - ESTO ES CLAVE
-      selectedAsociado.value = null; // Limpiar primero
-      await Future.delayed(const Duration(milliseconds: 50)); // Breve pausa
-      selectedAsociado.value = asociado; // Asignar el actualizado
-
-      // También forzar refresh de la lista
+      // FORZAR actualización del UI
+      selectedAsociado.value = null;
+      await Future.delayed(const Duration(milliseconds: 50));
+      selectedAsociado.value = asociado;
       asociados.refresh();
 
       _showSuccessSnackbar("¡Éxito!", "Asociado actualizado correctamente");
@@ -248,6 +264,8 @@ class AsociadosController extends GetxController {
       if (selectedAsociado.value?.id == id) {
         selectedAsociado.value = null;
         searchQuery.value = '';
+        // ✅ AQUÍ sí se pueden limpiar las cargas del asociado eliminado
+        cargasFamiliares.removeWhere((carga) => carga.asociadoId == id);
       }
 
       _showSuccessSnackbar("Eliminado", "Asociado eliminado correctamente");
@@ -262,15 +280,122 @@ class AsociadosController extends GetxController {
     }
   }
 
-  // Método para búsqueda biométrica
+  // ========== GESTIÓN DE CARGAS FAMILIARES ==========
+
+  // MÉTODO NUEVO: Cargar TODAS las cargas familiares
+  Future<void> loadAllCargasFamiliares() async {
+    try {
+      Get.log('=== CARGANDO TODAS LAS CARGAS FAMILIARES ===');
+      
+      final QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('cargas_familiares')
+          .get(); // ← SIN FILTRO, carga TODAS las cargas
+      
+      cargasFamiliares.clear();
+      for (var doc in snapshot.docs) {
+        final carga = CargaFamiliar.fromMap(
+          doc.data() as Map<String, dynamic>, 
+          doc.id
+        );
+        cargasFamiliares.add(carga);
+      }
+      
+      Get.log('=== TOTAL CARGAS CARGADAS: ${cargasFamiliares.length} ===');
+    } catch (e) {
+      Get.log('Error cargando todas las cargas familiares: $e');
+    }
+  }
+
+  // MÉTODO MODIFICADO: Cargar cargas familiares (mantener por compatibilidad)
+  Future<void> loadCargasFamiliares() async {
+    // Si ya tenemos cargas cargadas, no necesitamos cargar de nuevo
+    if (cargasFamiliares.isNotEmpty) {
+      Get.log('=== CARGAS YA CARGADAS: ${cargasFamiliares.length} ===');
+      return;
+    }
+    
+    // Si no tenemos cargas, cargar todas
+    await loadAllCargasFamiliares();
+  }
+
+  // MÉTODO MODIFICADO: Crear nueva carga familiar
+  Future<bool> createCargaFamiliar({
+    required String nombre,
+    required String apellido,
+    required String rut,
+    required String parentesco,
+    required DateTime fechaNacimiento,
+  }) async {
+    if (selectedAsociado.value?.id == null) {
+      _showErrorSnackbar("Error", "No hay asociado seleccionado");
+      return false;
+    }
+
+    try {
+      isLoading.value = true;
+      Get.log('=== CREANDO CARGA FAMILIAR ===');
+
+      // Validaciones
+      if (!CargaFamiliar.validarRUT(rut)) {
+        _showErrorSnackbar("Error", "RUT inválido. Formato: 12345678-9");
+        return false;
+      }
+
+      // Verificar que el RUT no exista
+      final existingCarga = cargasFamiliares.firstWhereOrNull(
+        (carga) => carga.rut == rut
+      );
+      
+      if (existingCarga != null) {
+        _showErrorSnackbar("Error", "Ya existe una carga familiar con este RUT");
+        return false;
+      }
+
+      // Crear objeto CargaFamiliar
+      final nuevaCarga = CargaFamiliar(
+        asociadoId: selectedAsociado.value!.id!,
+        nombre: nombre.trim(),
+        apellido: apellido.trim(),
+        rut: rut.trim(),
+        parentesco: parentesco,
+        fechaNacimiento: fechaNacimiento,
+        fechaCreacion: DateTime.now(),
+      );
+
+      // Guardar en Firestore
+      final docRef = await FirebaseFirestore.instance
+          .collection('cargas_familiares')
+          .add(nuevaCarga.toMap());
+
+      // Actualizar el objeto con el ID generado
+      final cargaConId = nuevaCarga.copyWith(id: docRef.id);
+      
+      // ✅ Agregar a la lista local de cargas (NO reemplazar toda la lista)
+      cargasFamiliares.add(cargaConId);
+
+      _showSuccessSnackbar("¡Éxito!", "Carga familiar agregada correctamente");
+      Get.log('Carga familiar creada: ${cargaConId.nombreCompleto}');
+      
+      return true;
+
+    } catch (e) {
+      Get.log('Error creando carga familiar: $e');
+      _showErrorSnackbar("Error", "No se pudo crear la carga familiar: ${e.toString()}");
+      return false;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
+  // ========== MÉTODOS DE INTERFAZ ==========
+
+  // Búsqueda biométrica
   Future<void> biometricSearch() async {
     isLoading.value = true;
     
     try {
-      // Simular lectura biométrica
       await Future.delayed(const Duration(seconds: 3));
       
-      // Por ahora simular que encontró un usuario (usar el primer asociado disponible)
       if (asociados.isNotEmpty) {
         final primerAsociado = asociados.first;
         await searchAsociado(primerAsociado.rut);
@@ -284,15 +409,13 @@ class AsociadosController extends GetxController {
     }
   }
 
-  // Método para escaneo QR
+  // Escaneo QR
   Future<void> qrCodeSearch() async {
     isLoading.value = true;
     
     try {
-      // Simular escaneo QR
       await Future.delayed(const Duration(seconds: 2));
       
-      // Por ahora simular que escaneó un RUT (usar un asociado aleatorio)
       if (asociados.isNotEmpty) {
         final asociadoAleatorio = asociados[
           DateTime.now().millisecond % asociados.length
@@ -308,22 +431,18 @@ class AsociadosController extends GetxController {
     }
   }
 
-  // Método para limpiar búsqueda
+  // MÉTODO MODIFICADO: Limpiar búsqueda
   void clearSearch() {
     selectedAsociado.value = null;
     searchQuery.value = '';
+    // ✅ NO limpiar cargas aquí
   }
 
-  // Método para eliminar asociado (wrapper para la UI)
-  void deleteAsociado() {
-    if (selectedAsociado.value?.id != null) {
-      deleteAsociadoById(selectedAsociado.value!.id!);
-    }
+  // Abrir dialogs
+  void newAsociado() {
+    NewAsociadoDialog.show(Get.context!);
   }
 
-  // ========== MÉTODOS ACTUALIZADOS PARA ABRIR DIALOGS ==========
-
-  // Método para editar asociado - ACTUALIZADO
   void editAsociado() {
     if (selectedAsociado.value != null) {
       final context = Get.context;
@@ -337,7 +456,6 @@ class AsociadosController extends GetxController {
     }
   }
 
-  // Método para agregar carga familiar - ACTUALIZADO
   void addCarga() {
     if (selectedAsociado.value != null) {
       final context = Get.context;
@@ -352,6 +470,12 @@ class AsociadosController extends GetxController {
       }
     } else {
       _showErrorSnackbar("Error", "No hay asociado seleccionado para agregar carga familiar");
+    }
+  }
+
+  void deleteAsociado() {
+    if (selectedAsociado.value?.id != null) {
+      deleteAsociadoById(selectedAsociado.value!.id!);
     }
   }
 
@@ -373,11 +497,8 @@ class AsociadosController extends GetxController {
     );
   }
 
-  void newAsociado() {
-    NewAsociadoDialog.show(Get.context!);
-  }
+  // ========== HELPERS ==========
 
-  // Helpers para mostrar mensajes
   void _showErrorSnackbar(String title, String message) {
     Get.snackbar(
       title, 
@@ -400,10 +521,11 @@ class AsociadosController extends GetxController {
     );
   }
 
-  // Getters útiles
+  // ========== GETTERS ==========
   bool get hasSelectedAsociado => selectedAsociado.value != null;
   String get currentSearchQuery => searchQuery.value;
   Asociado? get currentAsociado => selectedAsociado.value;
   int get totalAsociados => asociados.length;
   bool get hasAsociados => asociados.isNotEmpty;
+  int get totalCargasFamiliares => cargasFamiliares.length;
 }

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../../../../../../../utils/app_theme.dart';
+import '../../../../../../../controllers/asociados_controller.dart';
+import '../../../../../../../models/asociado.dart';
 
 class FamilyChargesCard extends StatefulWidget {
-  final Map<String, dynamic> asociado;
+  final Asociado asociado;
 
   const FamilyChargesCard({
     super.key,
@@ -24,17 +27,38 @@ class _FamilyChargesCardState extends State<FamilyChargesCard> {
 
   @override
   Widget build(BuildContext context) {
-    final cargas = widget.asociado['cargasFamiliares'] as List<dynamic>? ?? [];
+    // Obtener el controller para acceder a las cargas familiares reales
+    final AsociadosController controller = Get.find<AsociadosController>();
     
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionHeader(context, cargas.length),
-          const SizedBox(height: 16),
-          _buildChargesContent(context, cargas),
-          if (cargas.length > 5) _buildScrollHint(context),
+          // Header reactivo que muestra el número real de cargas DEL ASOCIADO PASADO POR PARÁMETRO
+          Obx(() {
+            // Usar el ID del asociado pasado por parámetro
+            final asociadoId = widget.asociado.id;
+            
+            if (asociadoId == null) {
+              return const SizedBox();
+            }
+            
+            // FILTRAR solo las cargas del asociado ACTUAL (el del widget, no el seleccionado)
+            final cargasDelAsociado = controller.cargasFamiliares
+                .where((carga) => carga.asociadoId == asociadoId)
+                .toList();
+            
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionHeader(context, cargasDelAsociado.length),
+                const SizedBox(height: 16),
+                _buildChargesContent(context, cargasDelAsociado),
+                if (cargasDelAsociado.length > 5) _buildScrollHint(context),
+              ],
+            );
+          }),
         ],
       ),
     );
@@ -113,7 +137,9 @@ class _FamilyChargesCardState extends State<FamilyChargesCard> {
             itemCount: cargas.length,
             separatorBuilder: (context, index) => const SizedBox(height: 8),
             itemBuilder: (context, index) {
-              return _buildFamilyChargeItem(context, cargas[index]);
+              // Ahora usa el modelo CargaFamiliar real
+              final carga = cargas[index];
+              return _buildFamilyChargeItem(context, carga);
             },
           ),
         ),
@@ -150,14 +176,22 @@ class _FamilyChargesCardState extends State<FamilyChargesCard> {
     );
   }
 
-  Widget _buildFamilyChargeItem(BuildContext context, Map<String, dynamic> carga) {
+  Widget _buildFamilyChargeItem(BuildContext context, dynamic carga) {
+    // Determinar si debe tener fondo especial basado en diferentes criterios
+    final bool hasSpecialBackground = _shouldHaveSpecialBackground(carga);
+    
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.getInputBackground(context),
+        // Fondo condicional
+        color: hasSpecialBackground 
+            ? AppTheme.primaryColor.withValues(alpha: 0.05)  // Fondo azul suave
+            : AppTheme.getInputBackground(context),           // Fondo normal
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-          color: AppTheme.getBorderLight(context),
+          color: hasSpecialBackground
+              ? AppTheme.primaryColor.withValues(alpha: 0.2)  // Borde azul
+              : AppTheme.getBorderLight(context),              // Borde normal
         ),
       ),
       child: Row(
@@ -170,7 +204,7 @@ class _FamilyChargesCardState extends State<FamilyChargesCard> {
               shape: BoxShape.circle,
             ),
             child: Icon(
-              _getFamilyIcon(carga['parentesco']),
+              _getFamilyIcon(carga.parentesco),
               color: AppTheme.primaryColor,
               size: 20,
             ),
@@ -183,7 +217,7 @@ class _FamilyChargesCardState extends State<FamilyChargesCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  carga['nombre'],
+                  carga.nombreCompleto,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -192,14 +226,14 @@ class _FamilyChargesCardState extends State<FamilyChargesCard> {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${carga['parentesco']} • RUT: ${carga['rut']}',
+                  '${carga.parentesco} • RUT: ${carga.rut}',
                   style: TextStyle(
                     fontSize: 14,
                     color: AppTheme.getTextSecondary(context),
                   ),
                 ),
                 Text(
-                  'Nacimiento: ${carga['fechaNacimiento']}',
+                  'Edad: ${carga.edad} años • Nacimiento: ${carga.fechaNacimientoFormateada}',
                   style: TextStyle(
                     fontSize: 12,
                     color: AppTheme.getTextSecondary(context),
@@ -208,9 +242,46 @@ class _FamilyChargesCardState extends State<FamilyChargesCard> {
               ],
             ),
           ),
+          
+          // Indicador de estado
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: BoxDecoration(
+              color: carga.isActive ? Colors.green.withValues(alpha: 0.1) : Colors.red.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              carga.estado,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: carga.isActive ? Colors.green : Colors.red,
+              ),
+            ),
+          ),
         ],
       ),
     );
+  }
+
+  // Método para determinar qué cargas deben tener fondo especial
+  bool _shouldHaveSpecialBackground(dynamic carga) {
+    // OPCIÓN 1: Alternar cada elemento (índice par/impar)
+    // return carga.hashCode % 2 == 0;
+    
+    // OPCIÓN 2: Destacar ciertos parentescos
+    final parentescosEspeciales = ['Cónyuge', 'Hijo/a', 'Padre', 'Madre'];
+    return parentescosEspeciales.contains(carga.parentesco);
+    
+    // OPCIÓN 3: Destacar por edad (menores de 18 años)
+    // return carga.edad < 18;
+    
+    // OPCIÓN 4: Destacar cargas recién creadas (menos de 30 días)
+    // final diasDesdeCreacion = DateTime.now().difference(carga.fechaCreacion).inDays;
+    // return diasDesdeCreacion <= 30;
+    
+    // OPCIÓN 5: Combinación de criterios
+    // return carga.edad < 18 || ['Cónyuge'].contains(carga.parentesco);
   }
 
   Widget _buildScrollHint(BuildContext context) {
@@ -237,13 +308,19 @@ class _FamilyChargesCardState extends State<FamilyChargesCard> {
         return Icons.favorite;
       case 'hijo':
       case 'hija':
+      case 'hijo/a':
         return Icons.child_care;
       case 'padre':
       case 'madre':
         return Icons.elderly;
       case 'hermano':
       case 'hermana':
+      case 'hermano/a':
         return Icons.people;
+      case 'abuelo':
+      case 'abuela':
+      case 'abuelo/a':
+        return Icons.elderly;
       default:
         return Icons.person;
     }
