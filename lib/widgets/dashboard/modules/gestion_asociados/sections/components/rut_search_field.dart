@@ -4,7 +4,7 @@ import '../../../../../../../utils/app_theme.dart';
 
 class RutSearchField extends StatefulWidget {
   final Function(String) onSearch;
-  final Function(String)? onChanged; // Nuevo callback para búsqueda en tiempo real
+  final Function(String)? onChanged;
   final bool isLoading;
 
   const RutSearchField({
@@ -29,73 +29,118 @@ class _RutSearchFieldState extends State<RutSearchField> {
     super.dispose();
   }
 
+  // Método público para limpiar el campo
+  void clearField() {
+    _rutController.clear();
+    setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: _rutController,
-      focusNode: _focusNode,
-      enabled: !widget.isLoading,
-      decoration: InputDecoration(
-        labelText: 'RUT del Asociado',
-        hintText: '12345678-9 o escribir para filtrar',
-        prefixIcon: Icon(
-          Icons.badge,
-          color: AppTheme.primaryColor,
-          size: 20,
-        ),
-        suffixIcon: IconButton(
-          onPressed: widget.isLoading || _rutController.text.trim().isEmpty 
-              ? null 
-              : _handleSearch,
-          icon: Icon(
-            Icons.search,
-            color: _rutController.text.trim().isEmpty 
-                ? AppTheme.getTextSecondary(context)
-                : AppTheme.primaryColor,
+    return Focus(
+      onKeyEvent: (node, event) {
+        // Manejar tecla ESC para limpiar el campo
+        if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.escape) {
+          if (_rutController.text.isNotEmpty) {
+            _rutController.clear();
+            setState(() {});
+            if (widget.onChanged != null) {
+              widget.onChanged!('');
+            }
+            return KeyEventResult.handled;
+          }
+        }
+        return KeyEventResult.ignored;
+      },
+      child: TextFormField(
+        controller: _rutController,
+        focusNode: _focusNode,
+        enabled: !widget.isLoading,
+        decoration: InputDecoration(
+          labelText: 'RUT del Asociado',
+          hintText: '12345678-9 o escribir para filtrar',
+          prefixIcon: Icon(
+            Icons.badge,
+            color: AppTheme.primaryColor,
             size: 20,
           ),
-          tooltip: 'Buscar exacto',
+          suffixIcon: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Botón para limpiar campo
+              if (_rutController.text.trim().isNotEmpty)
+                IconButton(
+                  onPressed: () {
+                    _rutController.clear();
+                    setState(() {});
+                    if (widget.onChanged != null) {
+                      widget.onChanged!('');
+                    }
+                  },
+                  icon: Icon(
+                    Icons.clear,
+                    color: AppTheme.getTextSecondary(context),
+                    size: 18,
+                  ),
+                  tooltip: 'Limpiar',
+                ),
+              // Botón de búsqueda exacta
+              IconButton(
+                onPressed: widget.isLoading || _rutController.text.trim().isEmpty 
+                    ? null 
+                    : _handleSearch,
+                icon: Icon(
+                  Icons.search,
+                  color: _rutController.text.trim().isEmpty 
+                      ? AppTheme.getTextSecondary(context)
+                      : AppTheme.primaryColor,
+                  size: 20,
+                ),
+                tooltip: 'Buscar exacto',
+              ),
+            ],
+          ),
+          filled: true,
+          fillColor: AppTheme.getInputBackground(context),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: AppTheme.getBorderLight(context)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: AppTheme.primaryColor, width: 2),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: AppTheme.getBorderLight(context)),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: Colors.red, width: 1),
+          ),
+          labelStyle: TextStyle(color: AppTheme.getTextSecondary(context)),
+          hintStyle: TextStyle(
+            color: AppTheme.getTextSecondary(context).withValues(alpha: 0.7),
+          ),
         ),
-        filled: true,
-        fillColor: AppTheme.getInputBackground(context),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppTheme.getBorderLight(context)),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppTheme.primaryColor, width: 2),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppTheme.getBorderLight(context)),
-        ),
-        errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.red, width: 1),
-        ),
-        labelStyle: TextStyle(color: AppTheme.getTextSecondary(context)),
-        hintStyle: TextStyle(
-          color: AppTheme.getTextSecondary(context).withValues(alpha: 0.7),
-        ),
+        style: TextStyle(color: AppTheme.getTextPrimary(context)),
+        keyboardType: TextInputType.text,
+        textInputAction: TextInputAction.search,
+        inputFormatters: [
+          FilteringTextInputFormatter.allow(RegExp(r'[0-9kK\-]')),
+          LengthLimitingTextInputFormatter(12),
+          _RutFormatter(),
+        ],
+        onFieldSubmitted: (_) => _handleSearch(),
+        onChanged: (value) {
+          setState(() {});
+          // IMPORTANTE: Llamar búsqueda en tiempo real
+          if (widget.onChanged != null) {
+            widget.onChanged!(value.trim());
+          }
+        },
+        validator: _validateRut,
       ),
-      style: TextStyle(color: AppTheme.getTextPrimary(context)),
-      keyboardType: TextInputType.text,
-      textInputAction: TextInputAction.search,
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'[0-9kK\-]')),
-        LengthLimitingTextInputFormatter(12), // 11 dígitos + 1 guión
-        _RutFormatter(),
-      ],
-      onFieldSubmitted: (_) => _handleSearch(),
-      onChanged: (value) {
-        setState(() {});
-        // Llamar búsqueda en tiempo real
-        if (widget.onChanged != null) {
-          widget.onChanged!(value.trim());
-        }
-      },
-      validator: _validateRut,
     );
   }
 
@@ -109,7 +154,7 @@ class _RutSearchFieldState extends State<RutSearchField> {
 
   String? _validateRut(String? value) {
     if (value == null || value.isEmpty) {
-      return null; // Permitir campo vacío
+      return null;
     }
     
     if (!_isValidRutFormat(value)) {
@@ -120,13 +165,11 @@ class _RutSearchFieldState extends State<RutSearchField> {
   }
 
   bool _isValidRutFormat(String rut) {
-    // Validación básica de formato RUT chileno
     final rutRegex = RegExp(r'^\d{7,8}-[0-9kK]$');
     return rutRegex.hasMatch(rut);
   }
 }
 
-// Formateador para RUT chileno
 class _RutFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(

@@ -345,7 +345,7 @@ class NewAsociadoDialog {
         hintText: '12345678-9',
         prefixIcon: Icon(Icons.badge, color: AppTheme.primaryColor),
         labelStyle: TextStyle(color: AppTheme.getTextSecondary(context)),
-        hintStyle: TextStyle(color: AppTheme.getTextSecondary(context).withOpacity(0.7)),
+        hintStyle: TextStyle(color: AppTheme.getTextSecondary(context).withValues(alpha: 0.7)),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: AppTheme.getBorderLight(context)),

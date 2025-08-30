@@ -54,14 +54,16 @@ class SearchSection extends StatelessWidget {
         Expanded(
           flex: 5,
           child: RutSearchField(
+            key: controller.searchFieldKey, // NUEVO: Key para acceso externo
             onSearch: controller.searchAsociado,
+            onChanged: (query) => controller.onSearchQueryChanged(query), // NUEVO: Búsqueda en tiempo real
             isLoading: controller.isLoading.value,
           ),
         ),
         
         const SizedBox(width: 12),
         
-        // Menú desplegable "Advanced"
+        // Menú desplegable "Advanced" (sin cambios)
         PopupMenuButton<String>(
           onSelected: (String value) {
             if (value == 'biometric') {

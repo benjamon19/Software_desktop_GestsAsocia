@@ -1,5 +1,7 @@
 import 'package:get/get.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'dart:async';
 import '../models/asociado.dart';
 import '../models/carga_familiar.dart';
 import '../widgets/dashboard/modules/gestion_asociados/shared/dialogs/new_asociado_dialog.dart';
@@ -11,19 +13,144 @@ class AsociadosController extends GetxController {
   RxBool isLoading = false.obs;
   Rxn<Asociado> selectedAsociado = Rxn<Asociado>();
   RxString searchQuery = ''.obs;
-  RxList<Asociado> asociados = <Asociado>[].obs;
+  
+  // Lista completa y lista filtrada para búsqueda en tiempo real
+  // ignore: prefer_final_fields
+  RxList<Asociado> _allAsociados = <Asociado>[].obs; // Lista completa (privada)
+  RxList<Asociado> asociados = <Asociado>[].obs;     // Lista filtrada (pública)
+  
   RxList<CargaFamiliar> cargasFamiliares = <CargaFamiliar>[].obs;
+
+  // Key global para acceder al RutSearchField
+  final GlobalKey<State<StatefulWidget>> searchFieldKey = GlobalKey();
+
+  // Timer para debounce en búsqueda en tiempo real
+  Timer? _debounceTimer;
 
   @override
   void onInit() {
     super.onInit();
+    
+    // Listener para manejar cambios en searchQuery (para compatibilidad)
+    searchQuery.listen((query) {
+      // Solo usar debounce si no es una búsqueda inmediata
+      if (_debounceTimer == null || !_debounceTimer!.isActive) {
+        _debounceTimer?.cancel();
+        _debounceTimer = Timer(const Duration(milliseconds: 100), () {
+          _filterAsociados(query);
+        });
+      }
+    });
+    
     loadAsociados();
-    loadAllCargasFamiliares(); // ← NUEVO: Cargar todas las cargas al inicializar
+    loadAllCargasFamiliares();
   }
 
-  // ========== GESTIÓN DE ASOCIADOS ==========
+  @override
+  void onClose() {
+    _debounceTimer?.cancel();
+    super.onClose();
+  }
 
-  // Cargar todos los asociados
+  // ========== NUEVOS MÉTODOS PARA BÚSQUEDA EN TIEMPO REAL ==========
+
+  /// Filtra los asociados basado en el query de búsqueda
+  void _filterAsociados(String query) {
+    final startTime = DateTime.now();
+    Get.log('FILTRANDO: "$query" con ${_allAsociados.length} asociados');
+    
+    if (query.isEmpty) {
+      asociados.value = List.from(_allAsociados);
+      Get.log('FILTRO VACÍO: Mostrando ${_allAsociados.length} asociados');
+      return;
+    }
+
+    final queryLower = query.toLowerCase();
+    final querySinFormato = query.replaceAll(RegExp(r'[^0-9kK]'), '').toLowerCase();
+    
+    final filteredList = _allAsociados.where((asociado) {
+      // Filtrar por RUT (sin formato)
+      final rutSinFormato = asociado.rut.replaceAll(RegExp(r'[^0-9kK]'), '').toLowerCase();
+      
+      // Filtrar por nombre completo
+      final nombreCompleto = asociado.nombreCompleto.toLowerCase();
+      
+      // Filtrar por email
+      final email = asociado.email.toLowerCase();
+      
+      return rutSinFormato.contains(querySinFormato) || 
+             nombreCompleto.contains(queryLower) ||
+             email.contains(queryLower);
+    }).toList();
+
+    asociados.value = filteredList;
+    
+    final duration = DateTime.now().difference(startTime);
+    Get.log('FILTRADO COMPLETADO: "$query" -> ${filteredList.length}/${_allAsociados.length} resultados en ${duration.inMilliseconds}ms');
+  }
+
+  /// Maneja el cambio de query de búsqueda en tiempo real
+  void onSearchQueryChanged(String query) {
+    Get.log('BÚSQUEDA INMEDIATA: "$query"');
+    // Cancelar cualquier timer anterior
+    _debounceTimer?.cancel();
+    
+    // Para búsqueda verdaderamente instantánea, ejecutar inmediatamente
+    _filterAsociadosImmediate(query);
+  }
+  
+  /// Filtro inmediato sin debounce para búsqueda instantánea
+  void _filterAsociadosImmediate(String query) {
+    Get.log('FILTRO INMEDIATO: "$query" con ${_allAsociados.length} asociados');
+    
+    if (query.isEmpty) {
+      asociados.value = List.from(_allAsociados);
+      asociados.refresh(); // Forzar actualización
+      Get.log('LISTA COMPLETA: ${_allAsociados.length} asociados');
+      return;
+    }
+
+    final queryLower = query.toLowerCase();
+    final querySinFormato = query.replaceAll(RegExp(r'[^0-9kK]'), '').toLowerCase();
+    
+    final filteredList = _allAsociados.where((asociado) {
+      final rutSinFormato = asociado.rut.replaceAll(RegExp(r'[^0-9kK]'), '').toLowerCase();
+      final nombreCompleto = asociado.nombreCompleto.toLowerCase();
+      final email = asociado.email.toLowerCase();
+      
+      return rutSinFormato.contains(querySinFormato) || 
+             nombreCompleto.contains(queryLower) ||
+             email.contains(queryLower);
+    }).toList();
+
+    // Actualizar la lista y forzar refresh
+    asociados.value = filteredList;
+    asociados.refresh();
+    
+    Get.log('FILTRADO INMEDIATO: "$query" -> ${filteredList.length}/${_allAsociados.length} resultados');
+  }
+
+  /// Resetea el filtro para mostrar todos los asociados
+  void resetFilter() {
+    searchQuery.value = '';
+    _filterAsociadosImmediate('');
+  }
+  void clearSearchField() {
+    try {
+      final dynamic searchField = searchFieldKey.currentState;
+      if (searchField != null) {
+        // Llamar directamente al método clearField del RutSearchField
+        if (searchField.runtimeType.toString().contains('_RutSearchFieldState')) {
+          (searchField as dynamic).clearField();
+        }
+      }
+    } catch (e) {
+      Get.log('Error limpiando campo de búsqueda: $e');
+    }
+  }
+
+  // ========== GESTIÓN DE ASOCIADOS (MODIFICADOS) ==========
+
   Future<void> loadAsociados() async {
     try {
       isLoading.value = true;
@@ -35,18 +162,22 @@ class AsociadosController extends GetxController {
       
       Get.log('=== DOCUMENTOS ENCONTRADOS: ${snapshot.docs.length} ===');
       
-      asociados.clear();
+      _allAsociados.clear();
       for (var doc in snapshot.docs) {
         Get.log('=== PROCESANDO DOC: ${doc.id} ===');
         final asociado = Asociado.fromMap(
           doc.data() as Map<String, dynamic>, 
           doc.id
         );
-        asociados.add(asociado);
+        _allAsociados.add(asociado);
         Get.log('=== AGREGADO: ${asociado.nombreCompleto} ===');
       }
       
-      Get.log('=== TOTAL ASOCIADOS EN LISTA: ${asociados.length} ===');
+      // Aplicar filtro actual después de cargar
+      _filterAsociados(searchQuery.value);
+      
+      Get.log('=== TOTAL ASOCIADOS EN LISTA COMPLETA: ${_allAsociados.length} ===');
+      Get.log('=== TOTAL ASOCIADOS FILTRADOS: ${asociados.length} ===');
     } catch (e) {
       Get.log('=== ERROR CARGANDO ASOCIADOS: $e ===');
       _showErrorSnackbar("Error", "No se pudieron cargar los asociados: $e");
@@ -55,7 +186,6 @@ class AsociadosController extends GetxController {
     }
   }
 
-  // Crear nuevo asociado
   Future<bool> createAsociado({
     required String nombre,
     required String apellido,
@@ -81,8 +211,8 @@ class AsociadosController extends GetxController {
         return false;
       }
 
-      // Verificar que el RUT no exista
-      final existingAsociado = asociados.firstWhereOrNull(
+      // Verificar que el RUT no exista en _allAsociados
+      final existingAsociado = _allAsociados.firstWhereOrNull(
         (asociado) => asociado.rut == rut
       );
       
@@ -114,14 +244,14 @@ class AsociadosController extends GetxController {
       // Actualizar el objeto con el ID generado
       final asociadoConId = nuevoAsociado.copyWith(id: docRef.id);
       
-      // Agregar a la lista local
-      asociados.add(asociadoConId);
+      // Agregar a la lista completa
+      _allAsociados.add(asociadoConId);
       
       // Seleccionar el nuevo asociado
       selectedAsociado.value = asociadoConId;
-      searchQuery.value = rut;
+      searchQuery.value = '';
 
-      _showSuccessSnackbar("¡Éxito!", "Asociado creado correctamente");
+      _showSuccessSnackbar("Éxito!", "Asociado creado correctamente");
       Get.log('Asociado creado: ${asociadoConId.nombreCompleto}');
       
       return true;
@@ -135,26 +265,24 @@ class AsociadosController extends GetxController {
     }
   }
 
-  // MÉTODO MODIFICADO: Buscar asociado por RUT
   Future<void> searchAsociado(String rut) async {
     if (rut.isEmpty) {
       selectedAsociado.value = null;
       searchQuery.value = '';
-      // ✅ NO limpiar cargas aquí
       return;
     }
     
     isLoading.value = true;
-    searchQuery.value = rut;
 
     try {
-      // Buscar en la lista local primero
-      final asociado = asociados.firstWhereOrNull(
+      // Buscar en la lista completa primero
+      final asociado = _allAsociados.firstWhereOrNull(
         (asociado) => asociado.rut == rut || asociado.rutFormateado == rut
       );
 
       if (asociado != null) {
         selectedAsociado.value = asociado;
+        searchQuery.value = '';
         
         // Cargar todas las cargas si no están cargadas
         if (cargasFamiliares.isEmpty) {
@@ -178,10 +306,13 @@ class AsociadosController extends GetxController {
           );
           
           selectedAsociado.value = asociadoEncontrado;
+          searchQuery.value = '';
           
-          // Agregar a la lista local si no está
-          if (!asociados.any((a) => a.id == asociadoEncontrado.id)) {
-            asociados.add(asociadoEncontrado);
+          // Agregar a la lista completa si no está
+          if (!_allAsociados.any((a) => a.id == asociadoEncontrado.id)) {
+            _allAsociados.add(asociadoEncontrado);
+            // Aplicar filtro después de agregar
+            _filterAsociados(searchQuery.value);
           }
           
           // Cargar todas las cargas si no están cargadas
@@ -192,7 +323,6 @@ class AsociadosController extends GetxController {
           _showSuccessSnackbar("Encontrado", "Asociado encontrado: ${asociadoEncontrado.nombreCompleto}");
         } else {
           selectedAsociado.value = null;
-          // ✅ NO limpiar cargas
           _showErrorSnackbar("No encontrado", "No se encontró ningún asociado con RUT: $rut");
         }
       }
@@ -200,13 +330,11 @@ class AsociadosController extends GetxController {
       Get.log('Error buscando asociado: $e');
       _showErrorSnackbar("Error", "Error al buscar asociado");
       selectedAsociado.value = null;
-      // ✅ NO limpiar cargas
     } finally {
       isLoading.value = false;
     }
   }
 
-  // Actualizar asociado
   Future<bool> updateAsociado(Asociado asociado) async {
     try {
       isLoading.value = true;
@@ -222,19 +350,20 @@ class AsociadosController extends GetxController {
           .doc(asociado.id)
           .update(asociado.toMap());
 
-      // Actualizar en la lista local
-      final index = asociados.indexWhere((a) => a.id == asociado.id);
+      // Actualizar en la lista completa
+      final index = _allAsociados.indexWhere((a) => a.id == asociado.id);
       if (index != -1) {
-        asociados[index] = asociado;
+        _allAsociados[index] = asociado;
+        // Aplicar filtro después de actualizar
+        _filterAsociados(searchQuery.value);
       }
 
       // FORZAR actualización del UI
       selectedAsociado.value = null;
       await Future.delayed(const Duration(milliseconds: 50));
       selectedAsociado.value = asociado;
-      asociados.refresh();
 
-      _showSuccessSnackbar("¡Éxito!", "Asociado actualizado correctamente");
+      _showSuccessSnackbar("Éxito!", "Asociado actualizado correctamente");
       return true;
 
     } catch (e) {
@@ -246,7 +375,6 @@ class AsociadosController extends GetxController {
     }
   }
 
-  // Eliminar asociado
   Future<bool> deleteAsociadoById(String id) async {
     try {
       isLoading.value = true;
@@ -257,14 +385,15 @@ class AsociadosController extends GetxController {
           .doc(id)
           .delete();
 
-      // Eliminar de la lista local
-      asociados.removeWhere((asociado) => asociado.id == id);
+      // Eliminar de la lista completa
+      _allAsociados.removeWhere((asociado) => asociado.id == id);
+      // Aplicar filtro después de eliminar
+      _filterAsociados(searchQuery.value);
 
       // Limpiar selección si era el asociado seleccionado
       if (selectedAsociado.value?.id == id) {
         selectedAsociado.value = null;
         searchQuery.value = '';
-        // ✅ AQUÍ sí se pueden limpiar las cargas del asociado eliminado
         cargasFamiliares.removeWhere((carga) => carga.asociadoId == id);
       }
 
@@ -280,16 +409,15 @@ class AsociadosController extends GetxController {
     }
   }
 
-  // ========== GESTIÓN DE CARGAS FAMILIARES ==========
+  // ========== RESTO DE MÉTODOS ORIGINALES ==========
 
-  // MÉTODO NUEVO: Cargar TODAS las cargas familiares
   Future<void> loadAllCargasFamiliares() async {
     try {
       Get.log('=== CARGANDO TODAS LAS CARGAS FAMILIARES ===');
       
       final QuerySnapshot snapshot = await FirebaseFirestore.instance
           .collection('cargas_familiares')
-          .get(); // ← SIN FILTRO, carga TODAS las cargas
+          .get();
       
       cargasFamiliares.clear();
       for (var doc in snapshot.docs) {
@@ -306,19 +434,15 @@ class AsociadosController extends GetxController {
     }
   }
 
-  // MÉTODO MODIFICADO: Cargar cargas familiares (mantener por compatibilidad)
   Future<void> loadCargasFamiliares() async {
-    // Si ya tenemos cargas cargadas, no necesitamos cargar de nuevo
     if (cargasFamiliares.isNotEmpty) {
       Get.log('=== CARGAS YA CARGADAS: ${cargasFamiliares.length} ===');
       return;
     }
     
-    // Si no tenemos cargas, cargar todas
     await loadAllCargasFamiliares();
   }
 
-  // MÉTODO MODIFICADO: Crear nueva carga familiar
   Future<bool> createCargaFamiliar({
     required String nombre,
     required String apellido,
@@ -370,10 +494,10 @@ class AsociadosController extends GetxController {
       // Actualizar el objeto con el ID generado
       final cargaConId = nuevaCarga.copyWith(id: docRef.id);
       
-      // ✅ Agregar a la lista local de cargas (NO reemplazar toda la lista)
+      // Agregar a la lista local de cargas
       cargasFamiliares.add(cargaConId);
 
-      _showSuccessSnackbar("¡Éxito!", "Carga familiar agregada correctamente");
+      _showSuccessSnackbar("Éxito!", "Carga familiar agregada correctamente");
       Get.log('Carga familiar creada: ${cargaConId.nombreCompleto}');
       
       return true;
@@ -387,17 +511,15 @@ class AsociadosController extends GetxController {
     }
   }
 
-  // ========== MÉTODOS DE INTERFAZ ==========
-
-  // Búsqueda biométrica
+  // Métodos de interfaz
   Future<void> biometricSearch() async {
     isLoading.value = true;
     
     try {
       await Future.delayed(const Duration(seconds: 3));
       
-      if (asociados.isNotEmpty) {
-        final primerAsociado = asociados.first;
+      if (_allAsociados.isNotEmpty) {
+        final primerAsociado = _allAsociados.first;
         await searchAsociado(primerAsociado.rut);
       } else {
         _showErrorSnackbar("Sin datos", "No hay asociados registrados para la búsqueda biométrica");
@@ -409,16 +531,15 @@ class AsociadosController extends GetxController {
     }
   }
 
-  // Escaneo QR
   Future<void> qrCodeSearch() async {
     isLoading.value = true;
     
     try {
       await Future.delayed(const Duration(seconds: 2));
       
-      if (asociados.isNotEmpty) {
-        final asociadoAleatorio = asociados[
-          DateTime.now().millisecond % asociados.length
+      if (_allAsociados.isNotEmpty) {
+        final asociadoAleatorio = _allAsociados[
+          DateTime.now().millisecond % _allAsociados.length
         ];
         await searchAsociado(asociadoAleatorio.rut);
       } else {
@@ -431,14 +552,11 @@ class AsociadosController extends GetxController {
     }
   }
 
-  // MÉTODO MODIFICADO: Limpiar búsqueda
   void clearSearch() {
     selectedAsociado.value = null;
     searchQuery.value = '';
-    // ✅ NO limpiar cargas aquí
   }
 
-  // Abrir dialogs
   void newAsociado() {
     NewAsociadoDialog.show(Get.context!);
   }
@@ -525,7 +643,8 @@ class AsociadosController extends GetxController {
   bool get hasSelectedAsociado => selectedAsociado.value != null;
   String get currentSearchQuery => searchQuery.value;
   Asociado? get currentAsociado => selectedAsociado.value;
-  int get totalAsociados => asociados.length;
+  int get totalAsociados => asociados.length; // Total filtrados
+  int get totalAllAsociados => _allAsociados.length; // Total sin filtrar
   bool get hasAsociados => asociados.isNotEmpty;
   int get totalCargasFamiliares => cargasFamiliares.length;
 }

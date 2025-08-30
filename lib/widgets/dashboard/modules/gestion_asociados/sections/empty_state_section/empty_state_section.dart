@@ -66,37 +66,10 @@ class EmptyStateSection extends StatelessWidget {
   }
 
   Widget _buildActionSuggestions(BuildContext context) {
-    return _buildSuggestionItem(
-      context,
-      icon: Icons.person_add_outlined,
-      title: 'Agregar nuevo asociado',
-      description: 'Usa el botón flotante para registrar un asociado',
-    );
-  }
-
-  Widget _buildSuggestionItem(
-    BuildContext context, {
-    required IconData icon,
-    required String title,
-    required String description,
-  }) {
     return Column(
       children: [
-        Container(
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: AppTheme.primaryColor.withValues(alpha: 0.08),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(
-            icon,
-            size: 24,
-            color: AppTheme.primaryColor,
-          ),
-        ),
-        const SizedBox(height: 12),
         Text(
-          title,
+          'Agregar nuevo asociado',
           style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -108,7 +81,7 @@ class EmptyStateSection extends StatelessWidget {
         Container(
           constraints: const BoxConstraints(maxWidth: 200),
           child: Text(
-            description,
+            'Usa el botón flotante para registrar un asociado',
             style: TextStyle(
               fontSize: 12,
               color: AppTheme.getTextSecondary(context),
