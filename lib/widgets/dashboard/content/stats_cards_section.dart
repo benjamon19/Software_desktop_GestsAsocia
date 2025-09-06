@@ -30,7 +30,7 @@ class StatsCardsSection extends StatelessWidget {
         const SizedBox(width: 20),
         Expanded(
           child: StatCard(
-            title: 'Nuevos Registros',
+            title: 'Nuevos Historiales',
             value: '12',
             icon: Icons.person_add_outlined,
             iconColor: const Color(0xFF9F7AEA),
@@ -40,7 +40,7 @@ class StatsCardsSection extends StatelessWidget {
         const SizedBox(width: 20),
         Expanded(
           child: StatCard(
-            title: 'Alertas',
+            title: 'Urgencias',
             value: '3',
             icon: Icons.warning_amber_outlined,
             iconColor: const Color(0xFFF56565),

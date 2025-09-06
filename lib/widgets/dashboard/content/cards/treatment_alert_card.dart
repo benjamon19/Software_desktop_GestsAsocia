@@ -4,7 +4,7 @@ import '../../../../utils/app_theme.dart';
 class TreatmentAlertCard extends StatelessWidget {
   const TreatmentAlertCard({super.key});
 
-  // Datos ficticios de alertas
+  // Datos ficticios de Urgencias
   final List<TreatmentAlert> _alerts = const [
     TreatmentAlert(
       patient: "Juan Pérez",
@@ -50,7 +50,7 @@ class TreatmentAlertCard extends StatelessWidget {
         children: [
           // Header
           Text(
-            'Alertas Pendientes',
+            'Urgencias Pendientes',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -87,7 +87,7 @@ class TreatmentAlertCard extends StatelessWidget {
             child: GestureDetector(
               onTap: () {},
               child: Text(
-                'Ver todas las alertas →',
+                'Ver todas las Urgencias →',
                 style: TextStyle(
                   fontSize: 12,
                   color: const Color(0xFF3B82F6),
